@@ -1,11 +1,12 @@
 ---
-title: "GROMACS 2025 分子动力学模拟初探"
+title: "LiveContainer无限制安装IPA"
 date: "2026-03-24 07:00:01"
-description: "记录一下基础的模拟设置过程"
-cover: "https://bu.dusays.com/2026/03/24/69c1e38b346cb.jpg"
-tags: ["分子动力学", "科研", "GROMACS"]
+description: "解决免费Apple ID只能同时装3个App的限制"
+cover: "LiveContainer.jpg"
+tags: ["侧载", "IPA", "Apple"]
 ---
 
-## 终于建好博客了！
+## 一个容器内可以运行几十个IPA软件！
 
-这是我的第一篇博客文章。今天整理一下如何使用 GROMACS 进行基础的分子动力学模拟设置，以及在跑完模拟后如何提取 RMSD 和 RMSF 数据...
+LiveContainer 是免越狱、开源免费的iOS应用容器启动器，常和 SideStore 搭配使用。
+它不是虚拟机、不是模拟器，而是在自身沙盒内创建独立运行环境，所有IPA都在容器内部运行，不会占用系统独立安装名额。
