@@ -4,22 +4,13 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>博客管理后台</title>
-  <!-- 引入 Netlify Identity Widget（用于处理 GitHub 授权跳转） -->
-  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
 <body>
   <!-- 引入 Decap CMS 核心脚本 -->
   <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
   <script>
-    if (window.netlifyIdentity) {
-      window.netlifyIdentity.on("init", user => {
-        if (!user) {
-          window.netlifyIdentity.on("login", () => {
-            document.location.href = "/admin/";
-          });
-        }
-      });
-    }
+    // 强制初始化 CMS 并指定后端类型，防止其回退到默认的 Netlify 逻辑
+    CMS.init();
   </script>
 </body>
 </html>
