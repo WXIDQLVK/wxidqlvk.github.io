@@ -1,9 +1,9 @@
 ---
-title: "苹果开放第三方欧盟商店"
+title: "AltStore欧盟商店"
 date: "2026-03-24 07:00:45"
-description: "记录一下基础的模拟设置过程"
+description: "苹果开放第三方欧盟商店"
 cover: "altstore.jpg"
-tags: ["苹果", "GROMACS"]
+tags: ["苹果", "Apple"]
 ---
 
 ## 终于可以下载第三方APP了！
