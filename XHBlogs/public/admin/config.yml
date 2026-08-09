@@ -1,1 +1,17 @@
-admin/config.yml
+backend:
+  name: github
+  repo: wxidqlvk/wxidqlvk.github.io
+  branch: main
+
+media_folder: "public/images"
+public_folder: "/images"
+
+collections:
+  - name: "posts"
+    label: "文章"
+    folder: "content/posts"
+    create: true
+    fields:
+      - {label: "标题", name: "title", widget: "string"}
+      - {label: "发布日期", name: "date", widget: "datetime"}
+      - {label: "正文", name: "body", widget: "markdown"}
