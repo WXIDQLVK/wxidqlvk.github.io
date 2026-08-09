@@ -2,6 +2,9 @@ backend:
   name: github
   repo: wxidqlvk/wxidqlvk.github.io
   branch: main
+  # 显式指定 GitHub 认证网关，彻底掐断它去请求 netlify
+  base_url: https://api.netlify.com
+  auth_endpoint: auth
 
 media_folder: "public/images"
 public_folder: "/images"
