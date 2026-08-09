@@ -61,7 +61,7 @@ export default function Navbar() {
     { name: '照片', href: '/photowall' },
     { name: '音乐', href: '/music' },
     { name: '说说', href: '/moments' },
-    { name: '文章', href: '/chatter' },
+    { name: '杂谈', href: '/chatter' },
     { name: '🌳 灵境', href: '/tree' }, // <--- 新增的入口在这里喵！
     { name: '📝 草稿箱', href: '/drafts' },
     { name: '友链', href: '/friends' },
