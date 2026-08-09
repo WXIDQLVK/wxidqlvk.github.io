@@ -1,25 +1,27 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useEffect } from "react";
+
+// 使用 Next.js 的动态导入彻底禁掉服务端渲染（SSR）
+const DecapCms = dynamic(
+  async () => {
+    // 动态引入样式
+    import("decap-cms/dist/decap-cms.css");
+    // 返回一个占位组件或直接加载
+    return () => <div id="nc-root" />;
+  },
+  { ssr: false }
+);
 
 export default function AdminPage() {
   useEffect(() => {
-    // 动态加载 Decap CMS 的 CSS 和 JS
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = "https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.css";
-    document.head.appendChild(link);
-
+    // 动态加载 CMS 核心脚本
     const script = document.createElement("script");
     script.src = "https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js";
     script.async = true;
     document.body.appendChild(script);
   }, []);
 
-  return (
-    <div>
-      {/* 这里的 div 用来挂载 CMS 后台 */}
-      <div id="nc-root"></div>
-    </div>
-  );
+  return <DecapCms />;
 }
