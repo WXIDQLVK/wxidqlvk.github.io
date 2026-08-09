@@ -4,6 +4,27 @@ export interface Album { id: string; title: string; description: string; cover: 
 
 export const albums: Album[] = [
   {
+    "id": "ripples-of-the-past",
+    "title": "往昔的涟漪",
+    "description": "记录那些微小但深刻的记忆碎片",
+    "cover": "/xilian1.jpg",
+    "date": "2026.08",
+    "photos": [
+      {
+        "url": "/xilian1.jpg",
+        "caption": "昔涟一"
+      },
+      {
+        "url": "/xilian2.jpg",
+        "caption": "昔涟二"
+      },
+      {
+        "url": "/xilian3.jpg",
+        "caption": "昔涟三"
+      }
+    ]
+  },
+  {
     "id": "terra-journey",
     "title": "泰拉大陆纪行",
     "description": "关于源石、孤星与前文明的视觉记录（测试用相册）",
