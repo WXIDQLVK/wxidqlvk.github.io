@@ -2,17 +2,11 @@
 
 import { useEffect } from "react";
 
-export default function AdminPage() {
+export default function AdminRedirect() {
   useEffect(() => {
-    // 手动指定 config.yml 的加载路径
-    window.CMS_CONFIG = {
-      load_config_file: true,
-    };
+    // 自动跳转到我们接下来要创建的静态后台页面
+    window.location.href = "/admin/index.html";
   }, []);
 
-  return (
-    <>
-      <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
-    </>
-  );
+  return <div style={{ padding: "20px", textAlign: "center" }}>正在加载后台...</div>;
 }
