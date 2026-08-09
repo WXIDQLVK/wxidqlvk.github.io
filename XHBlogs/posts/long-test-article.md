@@ -6,7 +6,7 @@ tags:
 - 深度学习
 - GROMACS
 mood: ''
-cover: TrollStore.jpg
+cover: trollstore.jpg
 description: iOS永久签名工具
 ---
 
