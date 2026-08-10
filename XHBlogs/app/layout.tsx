@@ -85,7 +85,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                 <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-white/40 dark:bg-indigo-900/20 blur-[100px] rounded-full z-[-7] md:mix-blend-overlay"></div>
                 <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-400/30 dark:bg-purple-900/30 blur-[100px] rounded-full z-[-7] md:mix-blend-overlay"></div>
 
-                <div className="hidden md:block absolute inset-0 w-full h-full">
+                {/* 🌟 已开启全端背景粒子特效 */}
+                <div className="absolute inset-0 w-full h-full">
                   <BackgroundEffects />
                 </div>
               </div>
@@ -110,7 +111,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                 <MobileBackButton />
               </div>
 
-              {/* 🌟 已解除手机端隐藏，手机和电脑都会显示点击粒子特效 */}
+              {/* 🌟 已开启全端点击粒子特效 */}
               <ClickEffect />
             </div>
 
