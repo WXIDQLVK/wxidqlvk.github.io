@@ -1,4 +1,4 @@
-Import 'katex/dist/katex.min.css';
+import 'katex/dist/katex.min.css';
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Noto_Serif_SC } from "next/font/google";
 import "./globals.css";
