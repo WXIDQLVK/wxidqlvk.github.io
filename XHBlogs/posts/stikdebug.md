@@ -2,7 +2,7 @@
 title: "StikDebug本地调试"
 date: "2026-03-24 07:00:45"
 description: "手机独立开启JIT即时编译"
-cover: "stikdebug.jpg"
+cover: "/posts/stikdebug.webp"
 tags: ["工具", " JIT"]
 ---
 
