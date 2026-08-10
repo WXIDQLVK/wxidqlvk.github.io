@@ -6,7 +6,7 @@ tags:
 - 3A
 - 游戏科学
 mood: 新闻
-cover: wukong.jpg
+cover: /chatters/wukong.webp
 description: ''
 ---
 
