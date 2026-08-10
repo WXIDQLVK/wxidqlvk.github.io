@@ -6,7 +6,7 @@ tags:
 - 游戏
 - 日常
 mood: 思考
-cover: yysls.jpg
+cover: /chatters/yysls.webp
 description: ''
 ---
 
