@@ -6,20 +6,20 @@ export const albums: Album[] = [
   {
     "id": "ripples-of-the-past",
     "title": "往昔的涟漪",
-    "description": "记录那些微小但深刻的记忆碎片",
+    "description": "流星划过夜空，生命的长河荡起涟漪",
     "cover": "/xilian1.jpg",
     "date": "2026.08",
     "photos": [
       {
-        "url": "/xilian1.jpg",
+        "url": "/photos/xilian1.webp",
         "caption": "昔涟一"
       },
       {
-        "url": "/xilian2.jpg",
+        "url": "/photos/xilian2.webp",
         "caption": "昔涟二"
       },
       {
-        "url": "/xilian3.jpg",
+        "url": "/photos/xilian3.webp",
         "caption": "昔涟三"
       }
     ]
