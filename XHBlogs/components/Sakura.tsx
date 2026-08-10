@@ -13,11 +13,7 @@ export default function Sakura() {
   const [petals, setPetals] = useState<Petal[]>([]);
 
   useEffect(() => {
-    // 🌟 核心优化：手机端精简到 4 个花瓣，电脑端保持 40 个
-    const isMobile = window.innerWidth < 768;
-    const count = isMobile ? 4 : 40;
-
-    const generated = Array.from({ length: count }).map((_, i) => ({
+    const generated = Array.from({ length: 40 }).map((_, i) => ({
       id: i,
       left: `${Math.random() * 100}%`,
       size: 8 + Math.random() * 12, // 8px 到 20px 大小的花瓣
