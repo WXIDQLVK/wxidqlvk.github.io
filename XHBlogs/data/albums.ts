@@ -7,7 +7,7 @@ export const albums: Album[] = [
     "id": "ripples-of-the-past",
     "title": "往昔的涟漪",
     "description": "流星划过夜空，生命的长河荡起涟漪",
-    "cover": "/xilian1.jpg",
+    "cover": "/photos/xilian1.webp",
     "date": "2026.08",
     "photos": [
       {
