@@ -5,7 +5,7 @@ tags:
 - 侧载
 - Store
 - iOS
-mood: ''
+mood: 'https://trollstore.org'
 cover: trollstore.jpg
 description: 免越狱依靠漏洞的永久签名工具
 ---
