@@ -19,7 +19,11 @@ export default function Fireflies() {
   const [flies, setFlies] = useState<Firefly[]>([]);
 
   useEffect(() => {
-    const generated: Firefly[] = Array.from({ length: 50 }).map((_, i) => ({
+    // 🌟 核心优化：判断如果是手机端，只生成 15 个粒子；电脑端保持 50 个
+    const isMobile = window.innerWidth < 768;
+    const count = isMobile ? 15 : 50;
+
+    const generated: Firefly[] = Array.from({ length: count }).map((_, i) => ({
       id: i,
       // 初始出生点
       top: `${Math.random() * 100}%`,
