@@ -6,7 +6,7 @@ tags:
 - 学术脑洞
 - 日常
 mood: 思考
-cover: chicken.jpg
+cover: /images/ch.webp
 description: ''
 ---
 
