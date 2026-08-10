@@ -3,7 +3,7 @@ title: 关于我
 date: '2026-03-31'
 tags: []
 mood: ''
-cover: ⁠/images/bg.webp
+cover: /images/bg.webp
 description: ''
 ---
 
