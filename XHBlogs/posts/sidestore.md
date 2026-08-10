@@ -2,7 +2,7 @@
 title: "SideStore签名工具"
 date: "2026-03-24 07:00:45"
 description: "全程免电脑续签的开发者侧载工具"
-cover: "sidestore.jpg"
+cover: "/posts/sidestore.webp"
 tags: ["侧载", "IPA"]
 ---
 
