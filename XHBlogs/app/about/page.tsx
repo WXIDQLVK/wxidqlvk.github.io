@@ -42,7 +42,7 @@ function getDirActivities(dirName: string, typeLabel: '文章' | '杂谈' | '说
 export default async function AboutPage() {
   const fullPath = path.join(process.cwd(), 'app', 'about', 'about.md');
   let contentHtml = "博主很懒，还没有写自我介绍哦...";
-  let coverImage = "home.jpg";
+  let coverImage = "⁠/images/bg.webp";
 
   try {
     const fileContents = fs.readFileSync(fullPath, 'utf8');
