@@ -1,0 +1,11 @@
+---
+title: "StikDebug本地调试"
+date: "2026-03-24 07:00:45"
+description: "手机独立开启JIT即时编译"
+cover: "stikdebug.jpg"
+tags: ["工具", " JIT"]
+---
+
+## https://stikdebug.org
+
+StikDebug是一款适配iOS17.4及以上全版本、免越狱、开源免费的手机端调试工具，仅需电脑完成一次配对文件配置，后续无需连接电脑，就能为所有方式侧载的模拟器、虚拟机一键开启JIT即时编译加速，大幅提升软件运行性能
