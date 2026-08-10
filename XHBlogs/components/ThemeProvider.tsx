@@ -1,11 +1,11 @@
 "use client";
 import { createContext, useContext, useEffect, useState } from 'react';
 
-const ThemeContext = createContext({ isDark: true, toggleTheme: () => {} });
+const ThemeContext = createContext({ isDark: false, toggleTheme: () => {} });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  // 默认设为 true，这样在读取到配置前，如果是夜间模式就不会闪烁
-  const [isDark, setIsDark] = useState(true);
+  // 🌟 默认设为 false（白天模式）
+  const [isDark, setIsDark] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -14,8 +14,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     // 从 localStorage 读取真实状态
     const savedTheme = localStorage.getItem('blog-theme');
-    // 如果没有记录，默认给深色模式（流萤飞舞）
-    const isDarkMode = savedTheme !== 'light';
+    // 🌟 如果没有记录，默认给浅色模式 (light)
+    const isDarkMode = savedTheme === 'dark';
     setIsDark(isDarkMode);
 
     const root = document.documentElement;
