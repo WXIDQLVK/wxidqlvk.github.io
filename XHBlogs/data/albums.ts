@@ -35,10 +35,10 @@ export const albums: Album[] = [
         "url": "/photos/liuying2.webp",
         "caption": "流萤一"
       },
-      
+      {
         "url": "/photos/liuying3.webp",
         "caption": "流萤二"
-     }
+      }
     ]
   },
   {
