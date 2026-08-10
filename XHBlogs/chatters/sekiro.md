@@ -6,7 +6,7 @@ tags:
 - 游戏
 - 魂类
 mood: TGA
-cover: /images/sekiro.webp
+cover: /chatters/sekiro.webp
 description: ''
 ---
 
