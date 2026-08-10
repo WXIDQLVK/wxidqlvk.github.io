@@ -6,7 +6,7 @@ tags:
 - Store
 - iOS
 mood: ''
-cover: trollstore.jpg
+cover: /posts/trollstore.webp
 description: 免越狱依靠漏洞的永久签名工具
 ---
 
