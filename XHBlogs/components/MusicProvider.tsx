@@ -82,42 +82,42 @@ export function MusicProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let isMounted = true;
     
-    // 🎵 本地音乐配置（包含所有四首歌及其独立封面、音频、歌词）
+    // 🎵 本地音乐配置（封面已全部修改为 .webp 格式）
     const localPlaylist = [
       {
         id: "1",
         title: "无名的人",
         artist: "毛不易",
-        cover: "/wuming.jpg",            
-        src: "/wuming.mp3",               
-        lrcUrl: "/wuming.lrc",            
+        cover: "/music/wuming.webp",            
+        src: "/music/wuming.mp3",               
+        lrcUrl: "/music/wuming.lrc",            
         lyrics: []
       },
       {
         id: "2",
         title: "暮色回响",
         artist: "张韶涵",
-        cover: "/mosehuixiang.jpg",     
-        src: "/mosehuixiang.mp3",         
-        lrcUrl: "/mosehuixiang.lrc",      
+        cover: "/music/mosehuixiang.webp",     
+        src: "/music/mosehuixiang.mp3",         
+        lrcUrl: "/music/mosehuixiang.lrc",      
         lyrics: []
       },
       {
         id: "3",
         title: "兰亭序",
         artist: "周杰伦",
-        cover: "/lantingxu.jpg",        
-        src: "/lantingxu.mp3",            
-        lrcUrl: "/lantingxu.lrc",         
+        cover: "/music/lantingxu.webp",        
+        src: "/music/lantingxu.mp3",            
+        lrcUrl: "/music/lantingxu.lrc",         
         lyrics: []
       },
       {
         id: "4",
         title: "花海",
         artist: "周杰伦",
-        cover: "/huahai.jpg",           
-        src: "/huahai.mp3",            
-        lrcUrl: "/huahai.lrc",         
+        cover: "/music/huahai.webp",           
+        src: "/music/huahai.mp3",            
+        lrcUrl: "/music/huahai.lrc",         
         lyrics: []
       }
     ];
