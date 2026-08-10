@@ -13,9 +13,9 @@ export default function Sakura() {
   const [petals, setPetals] = useState<Petal[]>([]);
 
   useEffect(() => {
-    // 🌟 核心优化：判断如果是手机端，只生成 12 个花瓣；电脑端保持 40 个
+    // 🌟 核心优化：手机端精简到 4 个花瓣，电脑端保持 40 个
     const isMobile = window.innerWidth < 768;
-    const count = isMobile ? 12 : 40;
+    const count = isMobile ? 4 : 40;
 
     const generated = Array.from({ length: count }).map((_, i) => ({
       id: i,
