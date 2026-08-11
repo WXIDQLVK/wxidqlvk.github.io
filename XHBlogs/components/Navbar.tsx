@@ -24,6 +24,7 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [lastScrollY]);
 
+  // 导航菜单：已保留“关于”，已删除“友链”
   const navLinks = [
     { name: '首页', href: '/' },
     { name: '项目', href: '/projects' },
@@ -32,15 +33,17 @@ export default function Navbar() {
     { name: '音乐', href: '/music' },
     { name: '说说', href: '/moments' },
     { name: '杂谈', href: '/chatter' },
-    { name: '友链', href: '/friends' },
     { name: '关于', href: '/about' },
   ];
+
+  // 手机端菜单（同样不含友链）
+  const mobileNavLinks = navLinks;
 
   return (
     <header className={`w-full fixed top-0 left-0 right-0 z-50 transition-all duration-500 border-b ${showNav ? 'translate-y-0' : '-translate-y-full'} bg-white/40 dark:bg-slate-900/50 backdrop-blur-xl border-white/20 dark:border-white/5 shadow-sm`}>
       <div className="w-full max-w-6xl mx-auto h-16 flex items-center justify-between px-4 sm:px-[30px] box-border">
         
-        {/* 💻 电脑端：原封不动，完美保留 */}
+        {/* 💻 电脑端：保留标题和菜单（已移除友链，保留关于） */}
         <Link href="/" className="hidden md:block text-xl font-black text-slate-800 dark:text-white tracking-tighter hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300">
           {siteConfig.navTitle || siteConfig.authorName}
           <span className="text-indigo-500 mx-1">{siteConfig.navSuffix || 'の'}</span>
@@ -58,9 +61,9 @@ export default function Navbar() {
           })}
         </nav>
 
-        {/* 📱 手机端：去除左侧标题，功能平铺填满整行 */}
+        {/* 📱 手机端：平铺填满整行（已移除友链，保留关于） */}
         <nav className="flex md:hidden items-center justify-between w-full overflow-x-auto no-scrollbar py-2 gap-1">
-          {navLinks.map((link) => {
+          {mobileNavLinks.map((link) => {
             const isActive = pathname === link.href || pathname === `${link.href}/`;
             return (
               <Link 
