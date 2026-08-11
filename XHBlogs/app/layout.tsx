@@ -1,5 +1,5 @@
 import 'katex/dist/katex.min.css';
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Noto_Serif_SC } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "../components/ThemeProvider";
@@ -33,6 +33,20 @@ export const metadata: Metadata = {
     icon: siteConfig.faviconUrl,
     apple: siteConfig.faviconUrl,
   },
+  manifest: '/manifest.json', // 关联 PWA 清单文件
+  other: {
+    'apple-mobile-web-app-capable': 'yes',
+    'apple-mobile-web-app-status-bar-style': 'black-translucent',
+  },
+};
+
+// 🌟 视口配置：实现顶部无黑边（viewportFit: cover）及状态栏颜色自适应
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#0f172a' }
+  ],
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
