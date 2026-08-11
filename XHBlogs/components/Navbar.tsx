@@ -10,7 +10,6 @@ export default function Navbar() {
   const [lastScrollY, setLastScrollY] = useState(0);
   const pathname = usePathname();
 
-  // 控制滚动时自动隐藏/显示导航栏
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
@@ -41,14 +40,12 @@ export default function Navbar() {
     <header className={`w-full fixed top-0 left-0 right-0 z-50 transition-all duration-500 border-b ${showNav ? 'translate-y-0' : '-translate-y-full'} bg-white/40 dark:bg-slate-900/50 backdrop-blur-xl border-white/20 dark:border-white/5 shadow-sm`}>
       <div className="w-full max-w-6xl mx-auto h-16 flex items-center justify-between px-4 sm:px-[30px] box-border">
         
-        {/* 左侧：博客标题（手机端自动隐藏或自适应，避免挤压） */}
-        <Link href="/" className="text-lg sm:text-xl font-black text-slate-800 dark:text-white tracking-tighter hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300 flex-shrink-0">
+        {/* 💻 电脑端：原封不动，完美保留 */}
+        <Link href="/" className="hidden md:block text-xl font-black text-slate-800 dark:text-white tracking-tighter hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300">
           {siteConfig.navTitle || siteConfig.authorName}
           <span className="text-indigo-500 mx-1">{siteConfig.navSuffix || 'の'}</span>
-          <span className="hidden sm:inline">{siteConfig.navAfter || '宝藏之地'}</span>
+          {siteConfig.navAfter || '宝藏之地'}
         </Link>
-
-        {/* 💻 电脑端导航菜单 */}
         <nav className="hidden md:flex gap-8 text-sm font-bold">
           {navLinks.map((link) => {
             const isActive = pathname === link.href || pathname === `${link.href}/`;
@@ -61,15 +58,15 @@ export default function Navbar() {
           })}
         </nav>
 
-        {/* 📱 手机端：支持横向滚动的顶部磨砂导航菜单（无论去哪个页面都固定在顶部） */}
-        <nav className="flex md:hidden items-center gap-2 overflow-x-auto no-scrollbar py-2 max-w-[60%] sm:max-w-[70%]">
+        {/* 📱 手机端：去除左侧标题，功能平铺填满整行 */}
+        <nav className="flex md:hidden items-center justify-between w-full overflow-x-auto no-scrollbar py-2 gap-1">
           {navLinks.map((link) => {
             const isActive = pathname === link.href || pathname === `${link.href}/`;
             return (
               <Link 
                 key={link.href} 
                 href={link.href} 
-                className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-300 ${
+                className={`px-2 py-1 rounded-full text-[11px] font-bold whitespace-nowrap transition-all duration-300 ${
                   isActive 
                     ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/30' 
                     : 'text-slate-700 dark:text-slate-200 bg-white/30 dark:bg-slate-800/40 hover:bg-white/60'
