@@ -1,6 +1,6 @@
 {
   "name": "个人博客",
-  "short_name": "XingHuiBlog",
+  "short_name": "个人博客",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0f172a",
