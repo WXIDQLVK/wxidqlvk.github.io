@@ -8,9 +8,15 @@ import { siteConfig } from '../siteConfig';
 export default function Navbar() {
   const [showNav, setShowNav] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const [isStandalone, setIsStandalone] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
+    // 检测是否是以独立App模式（添加到桌面）运行
+    if (window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone) {
+      setIsStandalone(true);
+    }
+
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       if (currentScrollY > lastScrollY && currentScrollY > 80) {
@@ -24,7 +30,6 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [lastScrollY]);
 
-  // 导航菜单：已保留“关于”，已删除“友链”
   const navLinks = [
     { name: '首页', href: '/' },
     { name: '项目', href: '/projects' },
@@ -32,18 +37,15 @@ export default function Navbar() {
     { name: '照片', href: '/photowall' },
     { name: '音乐', href: '/music' },
     { name: '说说', href: '/moments' },
-    { name: '杂谈', href: '/chatter' },
     { name: '关于', href: '/about' },
   ];
 
-  // 手机端菜单（同样不含友链）
-  const mobileNavLinks = navLinks;
-
   return (
     <header className={`w-full fixed top-0 left-0 right-0 z-50 transition-all duration-500 border-b ${showNav ? 'translate-y-0' : '-translate-y-full'} bg-white/40 dark:bg-slate-900/50 backdrop-blur-xl border-white/20 dark:border-white/5 shadow-sm`}>
-      <div className="w-full max-w-6xl mx-auto h-16 flex items-center justify-between px-4 sm:px-[30px] box-border">
+      {/* 🌟 核心：仅在桌面端独立App模式下，动态增加顶部内边距（pt），把导航栏往下顶出状态栏遮挡范围 */}
+      <div className={`w-full max-w-6xl mx-auto flex items-center justify-between px-4 sm:px-[30px] box-border transition-all ${isStandalone ? 'pt-10 pb-3 h-24' : 'h-16 pt-0'}`}>
         
-        {/* 💻 电脑端：保留标题和菜单（已移除友链，保留关于） */}
+        {/* 💻 电脑端：原封不动 */}
         <Link href="/" className="hidden md:block text-xl font-black text-slate-800 dark:text-white tracking-tighter hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300">
           {siteConfig.navTitle || siteConfig.authorName}
           <span className="text-indigo-500 mx-1">{siteConfig.navSuffix || 'の'}</span>
@@ -61,15 +63,15 @@ export default function Navbar() {
           })}
         </nav>
 
-        {/* 📱 手机端：平铺填满整行（已移除友链，保留关于） */}
-        <nav className="flex md:hidden items-center justify-between w-full overflow-x-auto no-scrollbar py-2 gap-1">
-          {mobileNavLinks.map((link) => {
+        {/* 📱 手机端：如果是桌面App模式会自动下移，网页浏览器里完全不受影响 */}
+        <nav className="flex md:hidden items-center justify-between w-full overflow-x-auto no-scrollbar py-1 gap-1">
+          {navLinks.map((link) => {
             const isActive = pathname === link.href || pathname === `${link.href}/`;
             return (
               <Link 
                 key={link.href} 
                 href={link.href} 
-                className={`px-2 py-1 rounded-full text-[11px] font-bold whitespace-nowrap transition-all duration-300 ${
+                className={`px-2.5 py-1.5 rounded-full text-[11px] font-bold whitespace-nowrap transition-all duration-300 ${
                   isActive 
                     ? 'bg-indigo-500 text-white shadow-md shadow-indigo-500/30' 
                     : 'text-slate-700 dark:text-slate-200 bg-white/30 dark:bg-slate-800/40 hover:bg-white/60'
