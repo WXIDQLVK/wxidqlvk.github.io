@@ -31,9 +31,9 @@ export const siteConfig = {
   photoWallImage: "/images/bg2.webp",
   cloudMusicIds: ["1809646618", "3361076230", "1859390262"],
   social: {
-    github: "https://github.com/wxidqlvk",
+    github: "https://github.com",
     gitee: "https://github.com/wxidqlvk",
-    google: "ficocamell650@gamil.com",
+    google: "https://www.google.com",
     email: "q663397592@icloud.com",
     qq: "663397592",
     wechat: "WXIDQLVK",
