@@ -43,7 +43,7 @@ export default function Navbar() {
   return (
     <>
       <header className={`w-full fixed top-0 left-0 right-0 z-50 transition-all duration-500 border-b ${showNav ? 'translate-y-0' : '-translate-y-full'} bg-white/40 dark:bg-slate-900/50 backdrop-blur-xl border-white/20 dark:border-white/5 shadow-sm`}>
-        {/* 🌟 导航栏再往下拉一点：增大 pt 和高度，彻底远离灵动岛 */}
+        {/* 🌟 保持当前完美的导航栏下拉位置 */}
         <div className={`w-full max-w-6xl mx-auto flex items-center justify-between px-4 sm:px-[30px] box-border transition-all ${isStandalone ? 'pt-[64px] pb-3 h-[124px]' : 'h-16 pt-0'}`}>
           
           {/* 💻 电脑端：原封不动 */}
@@ -87,8 +87,8 @@ export default function Navbar() {
         </div>
       </header>
 
-      {/* 🌟 空白占位窄一点：把占位高度调小（例如 pt-[48px]），让下方卡片往上收，与向下的导航栏完美衔接 */}
-      <div className={`w-full pointer-events-none ${isStandalone ? 'pt-[48px] sm:pt-[56px] block' : 'hidden'}`} aria-hidden="true"></div>
+      {/* 🌟 核心修改：将占位块恢复到与网页端视觉完全一致的间距大小（pt-20 sm:pt-24），确保独立 App 和网页端间距一模一样 */}
+      <div className={`w-full pointer-events-none ${isStandalone ? 'pt-20 sm:pt-24 block' : 'hidden'}`} aria-hidden="true"></div>
     </>
   );
 }
