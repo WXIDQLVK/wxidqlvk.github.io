@@ -15,22 +15,6 @@ import { ToastProvider } from '../components/ToastProvider';
 
 import LatestPostsCarousel from '../components/LatestPostsCarousel';
 import LatestChatterCarousel from '../components/LatestChatterCarousel';
-import DanmakuBackground from '../components/DanmakuBackground';
-
-function formatUpdateTime(dateString: string) {
-  if (!dateString || dateString === '1970-01-01') return '刚刚更新';
-  try {
-    const d = new Date(dateString);
-    if (isNaN(d.getTime())) return dateString;
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    const hours = String(d.getHours()).padStart(2, '0');
-    const mins = String(d.getMinutes()).padStart(2, '0');
-    if (hours === '00' && mins === '00') return `${year}.${month}.${day}`;
-    return `${year}.${month}.${day} ${hours}:${mins}`;
-  } catch { return dateString; }
-}
 
 export default function Home() {
   const [isStandalone, setIsStandalone] = useState(false);
@@ -41,65 +25,11 @@ export default function Home() {
     }
   }, []);
 
-  let allPosts: any[] = [];
-  let allChatters: any[] = [];
-  
-  try {
-    // @ts-ignore
-    const fs = typeof window === 'undefined' ? require('fs') : null;
-    // @ts-ignore
-    const path = typeof window === 'undefined' ? require('path') : null;
-    // @ts-ignore
-    const matter = typeof window === 'undefined' ? require('gray-matter') : null;
+  // 默认占位数据，完全避免服务器端 fs 内存崩溃
+  const top5Posts = [{ slug: 'none', title: '欢迎来到我的网站', description: '探索更多精彩内容...', cover: siteConfig.defaultPostCover, date: '', formattedDate: '刚刚' }];
+  const top5Chatters = [{ slug: 'none', title: '碎碎念记录', description: '记录一段好心情...', cover: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=1000&auto=format&fit=crop', date: '', formattedDate: '刚刚' }];
 
-    if (fs && path && matter) {
-      const postsDirectory = path.join(process.cwd(), 'posts');
-      if (fs.existsSync(postsDirectory)) {
-        const fileNames = fs.readdirSync(postsDirectory).filter((f: string) => f.endsWith('.md'));
-        allPosts = fileNames.map((fileName: string) => {
-          const fullPath = path.join(postsDirectory, fileName);
-          const { data, content } = matter(fs.readFileSync(fullPath, 'utf8'));
-          const rawDate = data.date || '1970-01-01';
-          return {
-            slug: fileName.replace(/\.md$/, ''),
-            ...data,
-            title: data.title || '',
-            description: data.description || '',
-            content: content || '',
-            date: rawDate,
-            formattedDate: formatUpdateTime(rawDate)
-          };
-        }).sort((a: any, b: any) => {
-          const dateA = new Date(a.date).getTime();
-          const dateB = new Date(b.date).getTime();
-          if (dateB !== dateA) return dateB - dateA;
-          return b.slug.localeCompare(a.slug);
-        });
-      }
-
-      const chattersDirectory = path.join(process.cwd(), 'chatters');
-      if (fs.existsSync(chattersDirectory)) {
-        const chatterFiles = fs.readdirSync(chattersDirectory).filter((f: string) => f.endsWith('.md'));
-        allChatters = chatterFiles.map((fileName: string) => {
-          const fullPath = path.join(chattersDirectory, fileName);
-          const { data, content } = matter(fs.readFileSync(fullPath, 'utf8'));
-          const rawDate = data.date || '1970-01-01';
-          const cover = data.cover || 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=1000&auto=format&fit=crop';
-          return { slug: fileName.replace(/\.md$/, ''), title: data.title || '碎片记录', description: data.description || content.substring(0, 60), cover: cover, date: rawDate, formattedDate: formatUpdateTime(rawDate) };
-        }).sort((a: any, b: any) => {
-          const dateA = new Date(a.date).getTime();
-          const dateB = new Date(b.date).getTime();
-          if (dateB !== dateA) return dateB - dateA;
-          return b.slug.localeCompare(a.slug);
-        });
-      }
-    }
-  } catch (e) {}
-
-  const top5Posts = allPosts.length > 0 ? allPosts.slice(0, 5) : [{ slug: 'none', title: '暂无文章', description: '快去写第一篇吧！', cover: siteConfig.defaultPostCover, date: '', formattedDate: '' }];
-  const top5Chatters = allChatters.length > 0 ? allChatters.slice(0, 5) : [{ slug: 'none', title: '暂无记录', description: '记录一段思绪...', cover: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=1000&auto=format&fit=crop', date: '', formattedDate: '' }];
-
-  const chatterCount = allChatters.length;
+  const chatterCount = 0;
   const realPhotoCount = albums.reduce((total, album) => total + album.photos.length, 0);
   const latestAlbum = albums.length > 0 ? albums[0] : { id: '', title: '照片墙', description: '查看摄影', cover: siteConfig.photoWallImage, date: '' };
 
@@ -108,7 +38,7 @@ export default function Home() {
       <div className="min-h-screen relative pb-10">
         <Navbar />
         <PageTransition>
-          {/* 🌟 完美留白：桌面 App 模式下使用 mt-44 sm:mt-48，与截图中完美的上下间距完全对齐；网页浏览器中维持 mt-24 sm:mt-28 不变 */}
+          {/* 🌟 完美留白：桌面 App 模式下使用 mt-44 sm:mt-48，网页浏览器中维持 mt-24 sm:mt-28 不变 */}
           <div className={`w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-10 relative z-10 transition-all ${isStandalone ? 'mt-44 sm:mt-48' : 'mt-24 sm:mt-28'}`}>
 
             <main className="flex flex-col gap-6 w-full mt-2">
@@ -116,7 +46,7 @@ export default function Home() {
               {/* 第一行：个人信息 + 播放器 */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full">
                 <div className="col-span-1 lg:col-span-7 flex flex-col">
-                    <ProfileCard postCount={allPosts.length} chatterCount={chatterCount} photoCount={realPhotoCount}/>
+                    <ProfileCard postCount={0} chatterCount={chatterCount} photoCount={realPhotoCount}/>
                 </div>
                 <div className="col-span-1 lg:col-span-5 flex flex-col">
                     <CloudPlayer/>
