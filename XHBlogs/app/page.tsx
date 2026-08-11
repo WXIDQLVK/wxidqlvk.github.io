@@ -5,6 +5,7 @@ import Link from 'next/link';
 
 import Navbar from '../components/Navbar';
 import PageTransition from '../components/PageTransition';
+import SearchBar from '../components/SearchBar';
 import { siteConfig } from '../siteConfig';
 import CloudPlayer from '../components/CloudPlayer';
 import ThemeToggleBlock from '../components/ThemeToggleBlock';
@@ -92,21 +93,19 @@ export default function Home() {
       <div className="min-h-screen relative pb-10">
         <Navbar />
         <PageTransition>
-          {/* 🌟 调整整体容器的内边距 */}
+          {/* 🌟 调整整体容器的内边距，适应手机端更小的屏幕 */}
           <div className="w-full max-w-6xl mx-auto mt-24 sm:mt-28 px-4 sm:px-6 lg:px-10 relative z-10">
-            
-            {/* 🌟 已删除搜索框，并将时间/面板组件移到最顶部 */}
-            <div className="w-full mb-6">
-              <SiteDashboard />
-            </div>
+            <SearchBar posts={allPosts} />
 
-            <main className="flex flex-col gap-6 w-full">
+            <main className="flex flex-col gap-6 w-full mt-6">
 
               {/* 第一行：个人信息 + 播放器 */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full">
+                {/* 手机上占满1列，电脑上占7列 */}
                 <div className="col-span-1 lg:col-span-7 flex flex-col">
                     <ProfileCard postCount={allPosts.length} chatterCount={chatterCount} photoCount={realPhotoCount}/>
                 </div>
+                {/* 手机上占满1列，电脑上占5列 */}
                 <div className="col-span-1 lg:col-span-5 flex flex-col">
                     <CloudPlayer/>
                 </div>
@@ -118,12 +117,15 @@ export default function Home() {
               {/* 第二行：文章轮播 + 照片墙 + 说说 + 主题切换 */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full">
 
+                {/* 左侧：文章轮播 (电脑端占4列，手机端排最上面) */}
                 <div className="col-span-1 lg:col-span-4 flex flex-col min-h-[300px]">
                   <LatestPostsCarousel posts={top5Posts} />
                 </div>
 
+                {/* 右侧：组合面板 (电脑端占8列) */}
                 <div className="col-span-1 lg:col-span-8 flex flex-col gap-6">
 
+                  {/* 照片墙大海报 */}
                   <Link href="/photowall" className="w-full rounded-3xl bg-white/40 dark:bg-slate-800/50 backdrop-blur-md border border-white/40 dark:border-white/10 shadow-xl overflow-hidden transition-all duration-700 hover:scale-[1.02] relative group min-h-[200px] sm:min-h-[220px] flex-shrink-0">
                     <img src={latestAlbum.cover} className="w-full h-full absolute inset-0 object-cover transition-transform duration-700 group-hover:scale-105 opacity-90"/>
                     <div className="absolute inset-0 bg-black/30 dark:bg-black/50 group-hover:bg-black/10 transition-colors duration-500"></div>
@@ -133,6 +135,8 @@ export default function Home() {
                     </div>
                   </Link>
 
+                  {/* 底层网格：说说轮播 + 主题切换器 */}
+                  {/* 手机上单列，平板上分3列比例分布 */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 w-full flex-1">
                     <div className="sm:col-span-2 flex flex-col min-h-[200px]">
                       <LatestChatterCarousel chatters={top5Chatters} />
@@ -145,6 +149,8 @@ export default function Home() {
                 </div>
               </div>
 
+              {/* 底部数据面板 */}
+              <div className="w-full mt-4"><SiteDashboard/></div>
             </main>
           </div>
         </PageTransition>
