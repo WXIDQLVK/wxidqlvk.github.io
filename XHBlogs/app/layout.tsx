@@ -94,8 +94,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                 <DanmakuBackground />
               </div>
 
-              {/* 🌟 手机端用 -mt-20 进一步大幅向上拉动，电脑端 md:mt-0 保持绝对正常 */}
-              <div className="relative z-10 flex-1 flex flex-col -mt-20 md:mt-0">
+              {/* 🌟 手机端用 -mt-6 强制把上方空白向上卷掉，电脑端 md:mt-0 保持绝对正常 */}
+              <div className="relative z-10 flex-1 flex flex-col -mt-6 md:mt-0">
                 {children}
               </div>
 
