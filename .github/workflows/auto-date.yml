@@ -1,32 +1,30 @@
-name: Auto fill date
+name: Deploy Next.js Site with Auto Date
 
 on:
   push:
-    paths:
-      - 'XHBlogs/moments/**/*.md'
-      - 'XHBlogs/posts/**/*.md'
-      - 'XHBlogs/chatters/**/*.md'
+    branches:
+      - main  # 如果你的默认分支是 master，请改成 master
   workflow_dispatch:
 
 jobs:
-  fill-date:
+  build-and-deploy:
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
+      # 1. 先在云端运行 Python 脚本，直接在内存里把 Markdown 文件的 date 填好
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
-      - name: Install dependencies
+      - name: Install Python dependencies
         run: pip install python-frontmatter pyyaml
 
-      - name: Auto fill missing date
+      - name: Auto fill missing dates in-memory
         run: |
           python << 'EOF'
           import frontmatter
@@ -44,7 +42,6 @@ jobs:
           for p in patterns:
               files.extend(glob.glob(p, recursive=True))
 
-          changed = False
           beijing_tz = timezone(timedelta(hours=8))
           now = datetime.now(beijing_tz).strftime('%Y-%m-%d %H:%M:%S')
 
@@ -53,27 +50,34 @@ jobs:
                   continue
               try:
                   post = frontmatter.load(path)
+                  # 如果没有 date 字段或者为空，直接在内存里注入当前时间
                   if 'date' not in post.metadata or not str(post.metadata.get('date') or '').strip():
                       post.metadata['date'] = now
                       with open(path, 'w', encoding='utf-8') as f:
-                        f.write(frontmatter.dumps(post))
-                      print(f"✅ Filled date for: {path}")
-                      changed = True
+                          f.write(frontmatter.dumps(post))
+                      print(f"✅ Injected date for: {path}")
               except Exception as e:
                   print(f"⚠️ Skip {path}: {e}")
-
-          if not changed:
-              print("No files need date filling.")
           EOF
 
-      - name: Commit changes
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add .
-          if git diff --staged --quiet; then
-            echo "No changes to commit"
-          else
-            git commit -m "chore: auto fill missing date in frontmatter"
-            git push
-          fi
+      # 2. 紧接着安装 Node.js 并打包构建 Next.js 网站
+      # （此时打包程序直接读取刚才改好的文件，绝不会再出现 1970 年）
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Node dependencies
+        run: npm install
+
+      - name: Build Next.js application
+        run: npm run build
+
+      # 3. 最后将打包好的网页部署到 GitHub Pages（请根据你原本使用的部署插件调整这步）
+      # 如果你原本有特定的部署步骤，可以保留你自己的，或者使用标准的 GitHub Pages 部署：
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./out  # 如果你的 Next.js 是静态导出目录（如 out 或 .next），请对应修改
