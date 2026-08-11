@@ -109,8 +109,8 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* 歌词栏（已将 mt-[-10px] 调整为合适的间距） */}
-              <div className="w-full mt-[-2px]"><LyricBar/></div>
+              {/* 歌词栏（已将 mt 改为 mt-6，与下方间距保持一致） */}
+              <div className="w-full mt-6"><LyricBar/></div>
 
               {/* 第二行：文章轮播 + 照片墙 + 说说 + 主题切换 */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full">
