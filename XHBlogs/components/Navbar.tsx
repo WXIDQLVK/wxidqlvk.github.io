@@ -1,5 +1,3 @@
-没问题！电脑端保留“关于”，只在手机端把“关于”这个选项去掉。
-请用以下代码替换你的 components/Navbar.tsx：
 "use client";
 
 import Link from 'next/link';
@@ -26,8 +24,7 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [lastScrollY]);
 
-  // 电脑端完整菜单（包含关于）
-  const desktopNavLinks = [
+  const navLinks = [
     { name: '首页', href: '/' },
     { name: '项目', href: '/projects' },
     { name: '文章', href: '/timeline' },
@@ -39,21 +36,18 @@ export default function Navbar() {
     { name: '关于', href: '/about' },
   ];
 
-  // 手机端菜单（过滤掉“关于”）
-  const mobileNavLinks = desktopNavLinks.filter(link => link.name !== '关于');
-
   return (
     <header className={`w-full fixed top-0 left-0 right-0 z-50 transition-all duration-500 border-b ${showNav ? 'translate-y-0' : '-translate-y-full'} bg-white/40 dark:bg-slate-900/50 backdrop-blur-xl border-white/20 dark:border-white/5 shadow-sm`}>
       <div className="w-full max-w-6xl mx-auto h-16 flex items-center justify-between px-4 sm:px-[30px] box-border">
         
-        {/* 💻 电脑端：原封不动，完美保留“关于” */}
+        {/* 💻 电脑端：原封不动，完美保留 */}
         <Link href="/" className="hidden md:block text-xl font-black text-slate-800 dark:text-white tracking-tighter hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300">
           {siteConfig.navTitle || siteConfig.authorName}
           <span className="text-indigo-500 mx-1">{siteConfig.navSuffix || 'の'}</span>
           {siteConfig.navAfter || '宝藏之地'}
         </Link>
         <nav className="hidden md:flex gap-8 text-sm font-bold">
-          {desktopNavLinks.map((link) => {
+          {navLinks.map((link) => {
             const isActive = pathname === link.href || pathname === `${link.href}/`;
             return (
               <Link key={link.href} href={link.href} className={`relative py-1 transition-colors ${isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-700 dark:text-slate-200 hover:text-indigo-600'}`}>
@@ -64,9 +58,9 @@ export default function Navbar() {
           })}
         </nav>
 
-        {/* 📱 手机端：平铺填满整行，且去掉了“关于”选项 */}
+        {/* 📱 手机端：去除左侧标题，功能平铺填满整行 */}
         <nav className="flex md:hidden items-center justify-between w-full overflow-x-auto no-scrollbar py-2 gap-1">
-          {mobileNavLinks.map((link) => {
+          {navLinks.map((link) => {
             const isActive = pathname === link.href || pathname === `${link.href}/`;
             return (
               <Link 
@@ -88,4 +82,3 @@ export default function Navbar() {
     </header>
   );
 }
-
