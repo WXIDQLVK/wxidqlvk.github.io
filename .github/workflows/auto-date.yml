@@ -8,13 +8,8 @@ on:
       - 'XHBlogs/chatters/**/*.md'
   workflow_dispatch:
 
-concurrency:
-  group: auto-date
-  cancel-in-progress: true
-
 jobs:
   fill-date:
-    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -50,9 +45,8 @@ jobs:
               files.extend(glob.glob(p, recursive=True))
 
           changed = False
-          # 北京时间，使用带 T 的标准格式（前端 new Date 最稳定）
           beijing_tz = timezone(timedelta(hours=8))
-          now = datetime.now(beijing_tz).strftime('%Y-%m-%dT%H:%M:%S')
+          now = datetime.now(beijing_tz).strftime('%Y-%m-%d %H:%M:%S')
 
           for path in files:
               if not os.path.isfile(path):
@@ -62,7 +56,7 @@ jobs:
                   if 'date' not in post.metadata or not str(post.metadata.get('date') or '').strip():
                       post.metadata['date'] = now
                       with open(path, 'w', encoding='utf-8') as f:
-                          f.write(frontmatter.dumps(post))
+                        f.write(frontmatter.dumps(post))
                       print(f"✅ Filled date for: {path}")
                       changed = True
               except Exception as e:
