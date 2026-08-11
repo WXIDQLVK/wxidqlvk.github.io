@@ -1,8 +1,11 @@
 ---
-title: "Sileo越狱商店"
-description: "苹果现代越狱插件商店"
-cover: "/posts/sileo.webp"
-tags: ["Store", "越狱"]
+cover: /posts/sileo.webp
+date: '2026-08-11 16:14:22'
+description: 苹果现代越狱插件商店
+tags:
+- Store
+- 越狱
+title: Sileo越狱商店
 ---
 
 ## https://getsileo.app
