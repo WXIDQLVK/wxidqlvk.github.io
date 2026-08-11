@@ -5,7 +5,6 @@ import Link from 'next/link';
 
 import Navbar from '../components/Navbar';
 import PageTransition from '../components/PageTransition';
-import SearchBar from '../components/SearchBar';
 import { siteConfig } from '../siteConfig';
 import CloudPlayer from '../components/CloudPlayer';
 import ThemeToggleBlock from '../components/ThemeToggleBlock';
@@ -95,9 +94,8 @@ export default function Home() {
         <PageTransition>
           {/* 🌟 调整整体容器的内边距，适应手机端更小的屏幕 */}
           <div className="w-full max-w-6xl mx-auto mt-24 sm:mt-28 px-4 sm:px-6 lg:px-10 relative z-10">
-            <SearchBar posts={allPosts} />
 
-            <main className="flex flex-col gap-6 w-full mt-6">
+            <main className="flex flex-col gap-6 w-full mt-2">
 
               {/* 第一行：个人信息 + 播放器 */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full">
