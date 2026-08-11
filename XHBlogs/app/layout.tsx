@@ -1,5 +1,5 @@
 import 'katex/dist/katex.min.css';
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Noto_Serif_SC } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "../components/ThemeProvider";
@@ -33,6 +33,19 @@ export const metadata: Metadata = {
     icon: siteConfig.faviconUrl,
     apple: siteConfig.faviconUrl,
   },
+  manifest: '/manifest.json',
+  other: {
+    'apple-mobile-web-app-capable': 'yes',
+    'apple-mobile-web-app-status-bar-style': 'black-translucent',
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#0f172a' }
+  ],
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
@@ -78,26 +91,24 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                   style={{
                     background: `linear-gradient(-45deg, ${siteConfig.themeColors.join(', ')})`,
                     backgroundSize: '400% 400%',
-                    animation: 'gradientMove 15s ease infinite' // 🌟 全端保留渐变流动
+                    animation: 'gradientMove 15s ease infinite'
                   }}
                 ></div>
 
-                {/* 👇 🌟 优化：手机端去掉了 mix-blend-overlay，但保留了 blur 模糊光晕，确保视觉不打折 */}
                 <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-white/40 dark:bg-indigo-900/20 blur-[100px] rounded-full z-[-7] md:mix-blend-overlay"></div>
                 <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-400/30 dark:bg-purple-900/30 blur-[100px] rounded-full z-[-7] md:mix-blend-overlay"></div>
 
-                {/* 隐藏手机端高负载粒子特效 */}
                 <div className="hidden md:block absolute inset-0 w-full h-full">
                   <BackgroundEffects />
                 </div>
               </div>
 
-              {/* 隐藏手机端弹幕 */}
               <div className="hidden md:block">
                 <DanmakuBackground />
               </div>
 
-              <div className="relative z-10 flex-1 flex flex-col">
+              {/* 🌟 手机端用 mt-2 和 pb-6，把整体内容往下推，拉开和底部播放条的间距 */}
+              <div className="relative z-10 flex-1 flex flex-col mt-2 pb-6 md:mt-0 md:pb-0">
                 {children}
               </div>
 
@@ -113,7 +124,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                 <MobileBackButton />
               </div>
 
-              {/* 隐藏手机端点击粒子 */}
               <div className="hidden md:block">
                 <ClickEffect />
               </div>
