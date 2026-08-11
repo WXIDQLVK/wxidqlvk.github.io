@@ -43,8 +43,8 @@ export default function Navbar() {
   return (
     <>
       <header className={`w-full fixed top-0 left-0 right-0 z-50 transition-all duration-500 border-b ${showNav ? 'translate-y-0' : '-translate-y-full'} bg-white/40 dark:bg-slate-900/50 backdrop-blur-xl border-white/20 dark:border-white/5 shadow-sm`}>
-        {/* 🌟 核心修改：把独立App模式下的顶部间距从 pt-16 放大到 pt-20（或 pt-24），让导航栏整体往下沉一大截，远离灵动岛 */}
-        <div className={`w-full max-w-6xl mx-auto flex items-center justify-between px-4 sm:px-[30px] box-border transition-all ${isStandalone ? 'pt-20 pb-4 h-36' : 'h-16 pt-0'}`}>
+        {/* 🌟 核心修改：把独立App模式下的顶部间距往上收了一丢丢（pt-14 h-28） */}
+        <div className={`w-full max-w-6xl mx-auto flex items-center justify-between px-4 sm:px-[30px] box-border transition-all ${isStandalone ? 'pt-14 pb-3 h-28' : 'h-16 pt-0'}`}>
           
           {/* 💻 电脑端：原封不动 */}
           <Link href="/" className="hidden md:block text-xl font-black text-slate-800 dark:text-white tracking-tighter hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300">
@@ -87,8 +87,8 @@ export default function Navbar() {
         </div>
       </header>
 
-      {/* 🌟 对应的占位块同步调大（从 pt-16 改为 pt-20），防止导航栏下移后挡住下方卡片 */}
-      <div className={`w-full pointer-events-none ${isStandalone ? 'pt-20 sm:pt-24 block' : 'hidden'}`} aria-hidden="true"></div>
+      {/* 🌟 对应的占位块同步往上收了一丢丢（pt-14 sm:pt-18） */}
+      <div className={`w-full pointer-events-none ${isStandalone ? 'pt-14 sm:pt-18 block' : 'hidden'}`} aria-hidden="true"></div>
     </>
   );
 }
