@@ -1,5 +1,6 @@
 ---
 cover: /posts/altstore.webp
+date: '2026-08-11 16:18:39'
 description: 苹果官方许可的第三方应用商店
 tags:
 - Store
