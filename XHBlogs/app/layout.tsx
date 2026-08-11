@@ -62,7 +62,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         />
       </head>
 
-      {/* 🌟 优化：加入 pt-0 md:pt-auto 并在手机端取消多余的 min-h-full 间距 */}
       <body className="w-screen overflow-x-hidden min-h-full flex flex-col relative transition-colors duration-1000 bg-slate-50 dark:bg-slate-950 font-serif">
         <ThemeProvider>
 
@@ -95,8 +94,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                 <DanmakuBackground />
               </div>
 
-              {/* 🌟 关键修改：在这里加上 pt-2 md:pt-0（手机端顶部紧凑一点，去掉那一大块空白） */}
-              <div className="relative z-10 flex-1 flex flex-col pt-2 md:pt-0">
+              {/* 🌟 手机端用 -mt-6 强制把上方空白向上卷掉，电脑端 md:mt-0 保持绝对正常 */}
+              <div className="relative z-10 flex-1 flex flex-col -mt-6 md:mt-0">
                 {children}
               </div>
 
