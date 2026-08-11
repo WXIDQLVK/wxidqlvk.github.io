@@ -1,5 +1,6 @@
 ---
 cover: /posts/livecontainer.webp
+date: '2026-08-11 16:13:17'
 description: 解决免费开发者证书只能同时装3个App的限制
 tags:
 - 侧载
