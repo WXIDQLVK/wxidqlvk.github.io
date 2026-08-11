@@ -1,8 +1,12 @@
 ---
-title: "LiveContainer活容器"
-description: "解决免费开发者证书只能同时装3个App的限制"
-cover: "/posts/livecontainer.webp"
-tags: ["侧载", "IPA", "JIT"]
+cover: /posts/livecontainer.webp
+date: '2026-08-11T09:10:41.000Z'
+description: 解决免费开发者证书只能同时装3个App的限制
+tags:
+- 侧载
+- IPA
+- JIT
+title: LiveContainer活容器
 ---
 
 ## https://livecontainer.github.io
