@@ -1,6 +1,5 @@
 ---
 cover: /posts/stikdebug.webp
-date: '2026-08-11T09:15:00.000Z'
 description: 手机独立开启JIT即时编译
 tags:
 - 工具
