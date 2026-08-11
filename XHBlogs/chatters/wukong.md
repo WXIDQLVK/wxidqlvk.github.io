@@ -1,12 +1,13 @@
 ---
-title: 《黑神话：悟空》正式发售
+cover: /chatters/wukong.webp
+date: '2026-08-11T09:46:46.000Z'
+description: ''
+mood: 新闻
 tags:
 - 游戏
 - 3A
 - 游戏科学
-mood: 新闻
-cover: /chatters/wukong.webp
-description: ''
+title: 《黑神话：悟空》正式发售
 ---
 
 中国第一部3A大作

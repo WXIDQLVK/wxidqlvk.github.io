@@ -1,12 +1,13 @@
 ---
-title: 燕云十六声公测开启
+cover: /chatters/yysls.webp
+date: '2026-08-11T09:46:46.000Z'
+description: ''
+mood: 思考
 tags:
 - 网易移动游戏
 - 游戏
 - 日常
-mood: 思考
-cover: /chatters/yysls.webp
-description: ''
+title: 燕云十六声公测开启
 ---
 
 《燕云十六声》是网易开发的北宋乱世背景国风开放世界武侠动作游戏，支持手机、PC、PS多端游玩
