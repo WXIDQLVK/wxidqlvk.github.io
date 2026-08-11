@@ -1,5 +1,4 @@
 ---
-date: '2026-08-11T21:13:37'
 id: ww
 images:
 - /moments/day1.webp
