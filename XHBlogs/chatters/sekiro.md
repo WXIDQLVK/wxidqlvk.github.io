@@ -1,6 +1,5 @@
 ---
 cover: /chatters/sekiro.webp
-date: '2026-08-11T09:46:46.000Z'
 description: ''
 mood: TGA
 tags:
