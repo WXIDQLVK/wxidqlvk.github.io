@@ -61,12 +61,10 @@ jobs:
           EOF
 
       # 2. 紧接着安装 Node.js 并打包构建 Next.js 网站
-      # （此时打包程序直接读取刚才改好的文件，绝不会再出现 1970 年）
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
 
       - name: Install Node dependencies
         run: npm install
@@ -74,10 +72,9 @@ jobs:
       - name: Build Next.js application
         run: npm run build
 
-      # 3. 最后将打包好的网页部署到 GitHub Pages（请根据你原本使用的部署插件调整这步）
-      # 如果你原本有特定的部署步骤，可以保留你自己的，或者使用标准的 GitHub Pages 部署：
+      # 3. 最后将打包好的网页部署到 GitHub Pages
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./out  # 如果你的 Next.js 是静态导出目录（如 out 或 .next），请对应修改
+          publish_dir: ./out  # 如果你的 Next.js 是静态导出目录（如 out），保持不变；如果是其他目录可自行对应修改
