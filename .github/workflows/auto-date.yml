@@ -8,8 +8,14 @@ on:
       - 'XHBlogs/chatters/**/*.md'
   workflow_dispatch:
 
+concurrency:
+  group: auto-date
+  cancel-in-progress: true
+
 jobs:
   fill-date:
+    # 只处理真人提交，跳过 github-actions[bot] 自己的提交
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -45,7 +51,6 @@ jobs:
               files.extend(glob.glob(p, recursive=True))
 
           changed = False
-          # 北京时间 = UTC+8，格式改成和你原来一样的
           beijing_tz = timezone(timedelta(hours=8))
           now = datetime.now(beijing_tz).strftime('%Y-%m-%d %H:%M:%S')
 
@@ -54,7 +59,6 @@ jobs:
                   continue
               try:
                   post = frontmatter.load(path)
-                  # 没有 date 或 date 为空字符串时才填充
                   if 'date' not in post.metadata or not str(post.metadata.get('date') or '').strip():
                       post.metadata['date'] = now
                       with open(path, 'w', encoding='utf-8') as f:
