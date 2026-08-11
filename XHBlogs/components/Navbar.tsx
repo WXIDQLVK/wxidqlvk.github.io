@@ -43,8 +43,8 @@ export default function Navbar() {
   return (
     <>
       <header className={`w-full fixed top-0 left-0 right-0 z-50 transition-all duration-500 border-b ${showNav ? 'translate-y-0' : '-translate-y-full'} bg-white/40 dark:bg-slate-900/50 backdrop-blur-xl border-white/20 dark:border-white/5 shadow-sm`}>
-        {/* 🌟 核心修改：把独立App模式下的顶部间距往上收了一丢丢（pt-14 h-28） */}
-        <div className={`w-full max-w-6xl mx-auto flex items-center justify-between px-4 sm:px-[30px] box-border transition-all ${isStandalone ? 'pt-14 pb-3 h-28' : 'h-16 pt-0'}`}>
+        {/* 🌟 核心修改：把独立App模式下的顶部间距调整到 pt-[17px] / h-[72px]，比刚才往下挪了一丢丢 */}
+        <div className={`w-full max-w-6xl mx-auto flex items-center justify-between px-4 sm:px-[30px] box-border transition-all ${isStandalone ? 'pt-[17px] pb-3 h-[72px]' : 'h-16 pt-0'}`}>
           
           {/* 💻 电脑端：原封不动 */}
           <Link href="/" className="hidden md:block text-xl font-black text-slate-800 dark:text-white tracking-tighter hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300">
@@ -87,8 +87,8 @@ export default function Navbar() {
         </div>
       </header>
 
-      {/* 🌟 对应的占位块同步往上收了一丢丢（pt-14 sm:pt-18） */}
-      <div className={`w-full pointer-events-none ${isStandalone ? 'pt-14 sm:pt-18 block' : 'hidden'}`} aria-hidden="true"></div>
+      {/* 🌟 对应的占位块同步向下微调一点（pt-[72px] 左右），防止卡片贴上去 */}
+      <div className={`w-full pointer-events-none ${isStandalone ? 'pt-[72px] sm:pt-[80px] block' : 'hidden'}`} aria-hidden="true"></div>
     </>
   );
 }
