@@ -1,6 +1,5 @@
 ---
 title: "AltStore欧盟商店"
-date: "2026-03-24 07:00:45"
 description: "苹果官方许可的第三方应用商店"
 cover: "/posts/altstore.webp"
 tags: ["Store", "Apple"]
