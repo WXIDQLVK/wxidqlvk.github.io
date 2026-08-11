@@ -14,7 +14,6 @@ concurrency:
 
 jobs:
   fill-date:
-    # 只处理真人提交，跳过 github-actions[bot] 自己的提交
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     permissions:
@@ -51,8 +50,9 @@ jobs:
               files.extend(glob.glob(p, recursive=True))
 
           changed = False
+          # 北京时间，使用带 T 的标准格式（前端 new Date 最稳定）
           beijing_tz = timezone(timedelta(hours=8))
-          now = datetime.now(beijing_tz).strftime('%Y-%m-%d %H:%M:%S')
+          now = datetime.now(beijing_tz).strftime('%Y-%m-%dT%H:%M:%S')
 
           for path in files:
               if not os.path.isfile(path):
