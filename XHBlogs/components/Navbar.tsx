@@ -40,12 +40,11 @@ export default function Navbar() {
     { name: '关于', href: '/about' },
   ];
 
-  // 🌟 注意这里：最外层加了一对空标签 <> 和 </>，用来包裹 header 和 新加的占位块
   return (
     <>
       <header className={`w-full fixed top-0 left-0 right-0 z-50 transition-all duration-500 border-b ${showNav ? 'translate-y-0' : '-translate-y-full'} bg-white/40 dark:bg-slate-900/50 backdrop-blur-xl border-white/20 dark:border-white/5 shadow-sm`}>
-        {/* 核心：在独立App模式下，加大顶部内边距，网页浏览器里则保持 h-16 pt-0 */}
-        <div className={`w-full max-w-6xl mx-auto flex items-center justify-between px-4 sm:px-[30px] box-border transition-all ${isStandalone ? 'pt-14 pb-3 h-28' : 'h-16 pt-0'}`}>
+        {/* 🌟 核心修改：把独立App模式下的顶部间距从 pt-16 放大到 pt-20（或 pt-24），让导航栏整体往下沉一大截，远离灵动岛 */}
+        <div className={`w-full max-w-6xl mx-auto flex items-center justify-between px-4 sm:px-[30px] box-border transition-all ${isStandalone ? 'pt-20 pb-4 h-36' : 'h-16 pt-0'}`}>
           
           {/* 💻 电脑端：原封不动 */}
           <Link href="/" className="hidden md:block text-xl font-black text-slate-800 dark:text-white tracking-tighter hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300">
@@ -65,7 +64,7 @@ export default function Navbar() {
             })}
           </nav>
 
-          {/* 📱 手机端：桌面模式下高度变高、往下沉，网页端完全不受影响 */}
+          {/* 📱 手机端：导航栏按钮 */}
           <nav className="flex md:hidden items-center justify-between w-full overflow-x-auto no-scrollbar py-1 gap-1">
             {navLinks.map((link) => {
               const isActive = pathname === link.href || pathname === `${link.href}/`;
@@ -88,11 +87,8 @@ export default function Navbar() {
         </div>
       </header>
 
-      {/* 🌟 神奇占位块：专门为了解决高度被遮挡加的
-          1. 只有 isStandalone 为 true（桌面App模式）时，它才有 `pt-12` 的高度，把下方卡片推开。
-          2. 在网页版中它是 `hidden`，完全不占据任何空间，不影响原布局！
-      */}
-      <div className={`w-full pointer-events-none ${isStandalone ? 'pt-12 sm:pt-16 block' : 'hidden'}`} aria-hidden="true"></div>
+      {/* 🌟 对应的占位块同步调大（从 pt-16 改为 pt-20），防止导航栏下移后挡住下方卡片 */}
+      <div className={`w-full pointer-events-none ${isStandalone ? 'pt-20 sm:pt-24 block' : 'hidden'}`} aria-hidden="true"></div>
     </>
   );
 }
