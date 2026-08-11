@@ -9,7 +9,7 @@ export default function SiteDashboard() {
   const [uptimeStr, setUptimeStr] = useState('');
 
   // 🌟 从配置中读取建站时间
-  const START_DATE = new Date(siteConfig.buildDate || '2026-08-10T00:00:00').getTime();
+  const START_DATE = new Date(siteConfig.buildDate || '2026-08-10T10:00:00').getTime();
 
   useEffect(() => {
     const updateTime = () => {
