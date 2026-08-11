@@ -1,4 +1,3 @@
-// components/WeatherWidget.tsx
 "use client";
 
 import { useState, useEffect } from 'react';
