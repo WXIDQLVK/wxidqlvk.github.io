@@ -1,5 +1,6 @@
 ---
 cover: /posts/trollstore.webp
+date: '2026-08-11T10:27:50.000Z'
 description: 免越狱依靠漏洞的永久签名工具
 mood: ''
 tags:
