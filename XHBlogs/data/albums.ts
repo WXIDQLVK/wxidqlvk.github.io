@@ -29,7 +29,7 @@ export const albums: Album[] = [
     "title": "长夜的萤火",
     "description": "同向而行的人，终会在某处相遇",
     "cover": "/photos/liuying1.webp",
-    "date": "2026.01",
+    "date": "2026.08",
     "photos": [
       {
         "url": "/photos/liuying2.webp",
@@ -46,7 +46,7 @@ export const albums: Album[] = [
     "title": "云间的啼音",
     "description": "如果鸟儿注定要坠落，为何还要飞向天空",
     "cover": "/photos/niao1.webp",
-    "date": "2025.10",
+    "date": "2026.08",
     "photos": [
       {
         "url": "/photos/niao1.webp",
