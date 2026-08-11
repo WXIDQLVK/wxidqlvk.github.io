@@ -1,5 +1,6 @@
 ---
 cover: /chatters/wukong.webp
+date: '2026-08-11T15:05:27.000Z'
 description: ''
 mood: 新闻
 tags:
