@@ -45,9 +45,9 @@ jobs:
               files.extend(glob.glob(p, recursive=True))
 
           changed = False
-          # 北京时间 = UTC+8，格式改成和你原来一样的
+          # 北京时间 = UTC+8
           beijing_tz = timezone(timedelta(hours=8))
-          now = datetime.now(beijing_tz).strftime('%Y-%m-%d %H:%M:%S')
+          now = datetime.now(beijing_tz).strftime('%Y-%m-%dT%H:%M:%S.000Z')
 
           for path in files:
               if not os.path.isfile(path):
