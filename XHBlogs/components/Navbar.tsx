@@ -42,8 +42,8 @@ export default function Navbar() {
 
   return (
     <header className={`w-full fixed top-0 left-0 right-0 z-50 transition-all duration-500 border-b ${showNav ? 'translate-y-0' : '-translate-y-full'} bg-white/40 dark:bg-slate-900/50 backdrop-blur-xl border-white/20 dark:border-white/5 shadow-sm`}>
-      {/* 🌟 核心：仅在桌面端独立App模式下，动态增加顶部内边距（pt），把导航栏往下顶出状态栏遮挡范围 */}
-      <div className={`w-full max-w-6xl mx-auto flex items-center justify-between px-4 sm:px-[30px] box-border transition-all ${isStandalone ? 'pt-10 pb-3 h-24' : 'h-16 pt-0'}`}>
+      {/* 🌟 核心：在独立App模式下，加大顶部内边距（用 pt-12 或更大会更往下移），网页浏览器里则保持 h-16 pt-0 */}
+      <div className={`w-full max-w-6xl mx-auto flex items-center justify-between px-4 sm:px-[30px] box-border transition-all ${isStandalone ? 'pt-14 pb-3 h-28' : 'h-16 pt-0'}`}>
         
         {/* 💻 电脑端：原封不动 */}
         <Link href="/" className="hidden md:block text-xl font-black text-slate-800 dark:text-white tracking-tighter hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300">
@@ -63,7 +63,7 @@ export default function Navbar() {
           })}
         </nav>
 
-        {/* 📱 手机端：如果是桌面App模式会自动下移，网页浏览器里完全不受影响 */}
+        {/* 📱 手机端：桌面模式下高度变高、往下沉，网页端完全不受影响 */}
         <nav className="flex md:hidden items-center justify-between w-full overflow-x-auto no-scrollbar py-1 gap-1">
           {navLinks.map((link) => {
             const isActive = pathname === link.href || pathname === `${link.href}/`;
