@@ -1,6 +1,5 @@
 ---
 title: "LiveContainer活容器"
-date: "2026-03-24 07:00:01"
 description: "解决免费开发者证书只能同时装3个App的限制"
 cover: "/posts/livecontainer.webp"
 tags: ["侧载", "IPA", "JIT"]
