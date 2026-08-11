@@ -1,6 +1,5 @@
 ---
 title: "Sileo越狱商店"
-date: "2026-08-10 07:00:45"
 description: "苹果现代越狱插件商店"
 cover: "/posts/sileo.webp"
 tags: ["Store", "越狱"]
