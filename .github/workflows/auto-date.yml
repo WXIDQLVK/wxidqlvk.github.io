@@ -5,6 +5,7 @@ on:
     paths:
       - 'XHBlogs/moments/**/*.md'
       - 'XHBlogs/posts/**/*.md'
+      - 'XHBlogs/chatters/**/*.md'
   workflow_dispatch:
 
 jobs:
@@ -36,6 +37,7 @@ jobs:
           patterns = [
               'XHBlogs/moments/**/*.md',
               'XHBlogs/posts/**/*.md',
+              'XHBlogs/chatters/**/*.md',
           ]
 
           files = []
