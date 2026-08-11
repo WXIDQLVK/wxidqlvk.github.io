@@ -25,10 +25,10 @@ export const siteConfig = {
   bgImages: ["/images/bg1.webp", "/images/bg2.webp", "/images/bg3.webp"],
 
   // 4. 文章默认封面图 (当 Markdown 没写 cover 时显示)
-  defaultPostCover: "https://bu.dusays.com/2026/03/24/69c1e38b346cb.jpg",
+  defaultPostCover: "/images/bg1.webp",
 
   // 5. 首页照片墙预览图
-  photoWallImage: "https://bu.dusays.com/2026/03/24/69c1e38b4c370.jpg",
+  photoWallImage: "/images/bg2.webp",
   cloudMusicIds: ["1809646618", "3361076230", "1859390262"],
   social: {
     github: "https://github.com/wxidqlvk",
