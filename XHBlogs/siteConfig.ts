@@ -5,7 +5,7 @@ export const siteConfig = {
   title: "个人博客",
   faviconUrl: "/images/icon.webp",
   authorName: "玩家名六个字",
-  bio: "热爱苹果生态与前沿应用开发的普通人，致力打造兼具性能与优秀体验的软件工具",
+  bio: "热爱苹果生态与前沿的应用开发的普通人，致力打造兼具性能与优秀体验的软件工具",
 
   navTitle: "个人",
 
