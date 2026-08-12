@@ -2,30 +2,35 @@
 
 import { useState, useRef, useEffect } from 'react';
 
-// 修复后的完整安全 LRC 歌词解析函数（完美防止漏句、吞句）
+// 终极升级版 LRC 歌词解析函数（完美支持各种变体、毫秒、多时间戳、空行对齐）
 function parseLrc(lrcText: string) {
-  if (!lrcText || lrcText.length > 50000) return [];
+  if (!lrcText || lrcText.length > 100000) return [];
   const lines = lrcText.split(/\r?\n/);
   const result = [];
   
-  // 更强壮的正则：支持 2位/3位小数、支持一行多个时间戳
-  const timeExp = /\[(\d{2,}):(\d{2})(?:\.(\d{2,3}))?\]/g;
+  // 匹配形如 [01:23.45], [01:23.4], [01:23], [123:45.67] 的时间戳
+  const timeExp = /\[(\d+):(\d{2})(?:\.(\d{1,3}))?\]/g;
 
   for (let line of lines) {
     const timeMatches = [...line.matchAll(timeExp)];
     if (timeMatches.length > 0) {
-      // 提取纯歌词文本
+      // 提取出所有时间戳之后的文本内容
       const text = line.replace(timeExp, '').trim();
       
-      // 遍历该行的所有时间戳（解决副歌多时间戳合并行失效的问题）
       for (const match of timeMatches) {
         const min = parseInt(match[1], 10);
         const sec = parseInt(match[2], 10);
-        const msText = match[3] || '0';
-        const ms = msText.length === 3 ? parseInt(msText, 10) / 1000 : parseInt(msText, 10) / 100;
-        const time = min * 60 + sec + ms;
+        const msStr = match[3] || '';
         
-        result.push({ time, text: text || '· · ·' });
+        // 智能换算毫秒：如果只有1位(如.1)代表百毫秒，2位代表十毫秒，3位代表毫秒
+        let ms = 0;
+        if (msStr.length === 1) ms = parseInt(msStr, 10) * 100;
+        else if (msStr.length === 2) ms = parseInt(msStr, 10) * 10;
+        else if (msStr.length === 3) ms = parseInt(msStr, 10);
+
+        const time = min * 60 + sec + ms / 1000;
+        
+        result.push({ time, text });
       }
     }
   }
@@ -112,8 +117,9 @@ export default function CloudPlayer({ songIds }: { songIds: string[] }) {
         .then(res => { if (!res.ok) throw new Error("失败"); return res.text(); })
         .then(text => {
           if (isMounted) {
-            setLyrics(parseLrc(text));
-            setCurrentLyric("♪ 歌词加载完毕 ♪");
+            const parsed = parseLrc(text);
+            setLyrics(parsed);
+            setCurrentLyric(parsed.length > 0 ? "♪ 歌词加载完毕 ♪" : "♪ 纯享音乐 ♪");
           }
         })
         .catch(() => { if (isMounted) setCurrentLyric("♪ 纯享音乐 ♪"); });
@@ -160,7 +166,8 @@ export default function CloudPlayer({ songIds }: { songIds: string[] }) {
       setProgress((currentTime / (duration || 1)) * 100);
 
       if (lyrics.length > 0) {
-        const activeLyric = lyrics.slice().reverse().find(l => currentTime >= l.time);
+        // 查找当前时间点对应的最后一句歌词，且必须有实际文本
+        const activeLyric = lyrics.slice().reverse().find(l => currentTime >= l.time && l.text);
         if (activeLyric && activeLyric.text !== currentLyric) {
           setCurrentLyric(activeLyric.text);
         }
@@ -278,7 +285,7 @@ export default function CloudPlayer({ songIds }: { songIds: string[] }) {
 
         <div className="w-16 flex justify-end">
           <svg className={`w-6 h-6 text-indigo-400/50 ${isPlaying ? 'animate-bounce' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWord="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
           </svg>
         </div>
       </div>
