@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, useRef, useEffect, ReactNode } from 'react';
 import { siteConfig } from '../siteConfig';
 
-// 【增强版 LRC 歌词解析】支持 1~3 位小数
+// 【增强版 LRC 歌词解析】支持任意位数小数
 function parseLrc(lrcText: string) {
   if (!lrcText || lrcText.length > 30000) return [];
 
@@ -11,10 +11,10 @@ function parseLrc(lrcText: string) {
   const result = [];
 
   for (let line of lines) {
-    // 修改点：(\d{1,3}) 支持 1~3 位小数
-    const matches = [...line.matchAll(/\[(\d{2,}):(\d{2})(?:\.(\d{1,3}))?\]/g)];
+    // 支持任意位数小数
+    const matches = [...line.matchAll(/\[(\d{2,}):(\d{2})(?:\.(\d+))?\]/g)];
     if (matches.length > 0) {
-      let text = line.replace(/\[\d{2,}:\d{2}(?:\.\d{1,3})?\]/g, '').trim();
+      let text = line.replace(/\[\d{2,}:\d{2}(?:\.\d+)?\]/g, '').trim();
 
       // 剔除控制字符
       const cleanText = text.replace(/[\u0000-\u001F\u007F-\u009F\u200B-\u200D\uFEFF]/g, "");
@@ -24,7 +24,7 @@ function parseLrc(lrcText: string) {
           const min = parseInt(match[1]);
           const sec = parseInt(match[2]);
           const msStr = match[3] || '0';
-          // 根据小数位数正确计算
+          // 根据实际小数位数正确计算
           const ms = parseInt(msStr) / Math.pow(10, msStr.length);
           const time = min * 60 + sec + ms;
           result.push({ time, text: cleanText });
@@ -84,7 +84,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let isMounted = true;
     
-    // 🎵 本地音乐配置（封面已全部修改为 .webp 格式）
+    // 🎵 本地音乐配置
     const localPlaylist = [
       {
         id: "1",
