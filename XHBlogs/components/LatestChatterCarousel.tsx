@@ -27,7 +27,6 @@ export default function LatestChatterCarousel({ chatters }: { chatters: any[] })
   };
 
   return (
-    // 🌟 注意这里：去掉了 md:col-span-8，变成一个纯粹填满父容器的组件
     <div className="w-full h-full rounded-3xl bg-white/40 dark:bg-slate-800/50 backdrop-blur-md border border-white/40 dark:border-white/10 shadow-xl overflow-hidden relative group min-h-[220px] flex flex-col">
       <Link href={currentChatter.slug === 'none' ? '/chatter' : `/chatter/${currentChatter.slug}`} className="absolute inset-0 z-20" aria-label={`查看杂谈: ${currentChatter.title}`} />
 
@@ -46,7 +45,7 @@ export default function LatestChatterCarousel({ chatters }: { chatters: any[] })
         </motion.div>
       </AnimatePresence>
 
-      <div className="relative z-10 flex flex-col justify-center p-6 md:p-8 h-full pointer-events-none w-full md:w-[85%]">
+      <div className="relative z-10 flex flex-col justify-center p-6 md:p-8 h-full w-full md:w-[85%]">
         <div className="flex items-end gap-2 mb-2">
           <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest bg-black/30 backdrop-blur-sm px-2 py-1 rounded-md border border-white/10 shadow-sm">
             Records
