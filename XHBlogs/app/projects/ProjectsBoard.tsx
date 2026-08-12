@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import BackButton from '../../components/BackButton'; // 注意层级路径
 import { projectsData } from '../../data/projects';
 
 export default function ProjectsBoard() {
@@ -23,11 +22,8 @@ export default function ProjectsBoard() {
   return (
     <div className="w-full max-w-6xl mx-auto px-4 sm:px-10 py-10 relative z-10">
 
-      {/* 顶部返回按钮与标题 */}
+      {/* 标题区域 */}
       <div className="mb-8 flex flex-col items-center md:items-start">
-        <div className="w-full flex justify-start mb-6">
-          <BackButton />
-        </div>
         <div className="text-center md:text-left w-full">
           <h1 className="text-4xl font-black text-slate-900 dark:text-white mb-4 tracking-widest drop-shadow-sm uppercase">
             Projects Matrix
