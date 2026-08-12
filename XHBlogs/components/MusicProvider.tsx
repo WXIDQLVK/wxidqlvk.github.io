@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, useRef, useEffect, ReactNode } from 'react';
 import { siteConfig } from '../siteConfig';
 
-// 【增强版 LRC 歌词解析】
+// 【增强版 LRC 歌词解析】支持 1~3 位小数
 function parseLrc(lrcText: string) {
   if (!lrcText || lrcText.length > 30000) return [];
 
@@ -11,9 +11,10 @@ function parseLrc(lrcText: string) {
   const result = [];
 
   for (let line of lines) {
-    const matches = [...line.matchAll(/\[(\d{2,}):(\d{2})(?:\.(\d{2,3}))?\]/g)];
+    // 修改点：(\d{1,3}) 支持 1~3 位小数
+    const matches = [...line.matchAll(/\[(\d{2,}):(\d{2})(?:\.(\d{1,3}))?\]/g)];
     if (matches.length > 0) {
-      let text = line.replace(/\[\d{2,}:\d{2}(?:\.\d{2,3})?\]/g, '').trim();
+      let text = line.replace(/\[\d{2,}:\d{2}(?:\.\d{1,3})?\]/g, '').trim();
 
       // 剔除控制字符
       const cleanText = text.replace(/[\u0000-\u001F\u007F-\u009F\u200B-\u200D\uFEFF]/g, "");
@@ -22,9 +23,10 @@ function parseLrc(lrcText: string) {
         for (const match of matches) {
           const min = parseInt(match[1]);
           const sec = parseInt(match[2]);
-          const ms = match[3] ? parseInt(match[3]) : 0;
-          const divisor = match[3] && match[3].length === 3 ? 1000 : 100;
-          const time = min * 60 + sec + ms / divisor;
+          const msStr = match[3] || '0';
+          // 根据小数位数正确计算
+          const ms = parseInt(msStr) / Math.pow(10, msStr.length);
+          const time = min * 60 + sec + ms;
           result.push({ time, text: cleanText });
         }
       }
@@ -139,7 +141,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     if (currentSong.lyrics && currentSong.lyrics.length > 0) {
       if (isMounted) {
         setLyrics(currentSong.lyrics);
-        setCurrentLyric(currentSong.lyrics[0]?.text || "\u266a \u7eaf\u4eab\u97f3\u4e50 \u266a");
+        setCurrentLyric(currentSong.lyrics[0]?.text || "♪ 纯享音乐 ♪");
       }
     } else if (currentSong.lrcUrl) {
       fetch(currentSong.lrcUrl)
@@ -155,7 +157,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
              });
           }
         })
-        .catch(() => { if (isMounted) setCurrentLyric("\u266a \u7eaf\u4eab\u97f3\u4e50 \u266a"); });
+        .catch(() => { if (isMounted) setCurrentLyric("♪ 纯享音乐 ♪"); });
     }
 
     if (isPlaying && audioRef.current) {
