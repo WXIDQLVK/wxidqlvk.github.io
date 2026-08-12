@@ -2,23 +2,30 @@
 
 import { useState, useRef, useEffect } from 'react';
 
-// 安全解析 LRC 歌词
+// 修复后的完整安全 LRC 歌词解析函数（完美防止漏句、吞句）
 function parseLrc(lrcText: string) {
-  if (!lrcText || lrcText.length > 20000) return [];
-  const lines = lrcText.split('\n');
+  if (!lrcText || lrcText.length > 50000) return [];
+  const lines = lrcText.split(/\r?\n/);
   const result = [];
+  
+  // 更强壮的正则：支持 2位/3位小数、支持一行多个时间戳
+  const timeExp = /\[(\d{2,}):(\d{2})(?:\.(\d{2,3}))?\]/g;
+
   for (let line of lines) {
-    const matches = [...line.matchAll(/\[(\d{2,}):(\d{2})(?:\.(\d{2,3}))?\]/g)];
-    if (matches.length > 0) {
-      const text = line.replace(/\[\d{2,}:\d{2}(?:\.\d{2,3})?\]/g, '').trim();
-      if (text) {
-        for (const match of matches) {
-          const min = parseInt(match[1]);
-          const sec = parseInt(match[2]);
-          const ms = match[3] ? parseInt(match[3]) : 0;
-          const time = min * 60 + sec + ms / (match[3] && match[3].length === 3 ? 1000 : 100);
-          result.push({ time, text });
-        }
+    const timeMatches = [...line.matchAll(timeExp)];
+    if (timeMatches.length > 0) {
+      // 提取纯歌词文本
+      const text = line.replace(timeExp, '').trim();
+      
+      // 遍历该行的所有时间戳（解决副歌多时间戳合并行失效的问题）
+      for (const match of timeMatches) {
+        const min = parseInt(match[1], 10);
+        const sec = parseInt(match[2], 10);
+        const msText = match[3] || '0';
+        const ms = msText.length === 3 ? parseInt(msText, 10) / 1000 : parseInt(msText, 10) / 100;
+        const time = min * 60 + sec + ms;
+        
+        result.push({ time, text: text || '· · ·' });
       }
     }
   }
@@ -174,7 +181,6 @@ export default function CloudPlayer({ songIds }: { songIds: string[] }) {
     return (
       <div className="md:col-span-5 rounded-3xl bg-white/40 dark:bg-slate-800/50 backdrop-blur-md border border-white/40 dark:border-white/10 shadow-xl p-6 flex flex-col items-center justify-center transition-colors duration-700 h-[220px]">
         <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-        {/* 【修改点】：文字加入 dark:text-white */}
         <span className="text-slate-800 dark:text-white font-bold tracking-widest animate-pulse text-sm">CONNECTING...</span>
       </div>
     );
@@ -201,7 +207,6 @@ export default function CloudPlayer({ songIds }: { songIds: string[] }) {
         .animate-cursor { animation: cursorBlink 0.8s step-end infinite; }
       `}</style>
 
-      {/* 音乐播放器卡片主体：加入 dark 模式背景适配 */}
       <div className="md:col-span-5 rounded-3xl bg-white/40 dark:bg-slate-800/50 backdrop-blur-md border border-white/40 dark:border-white/10 shadow-xl p-6 flex flex-col justify-between transition-all duration-700 hover:scale-[1.02] relative group overflow-hidden min-h-[220px]">
         <audio ref={audioRef} src={currentSong.src} onTimeUpdate={handleTimeUpdate} onEnded={nextSong} onLoadedMetadata={handleTimeUpdate} />
         <div className={`absolute -top-20 -right-20 w-48 h-48 bg-indigo-500/20 blur-[50px] rounded-full transition-opacity duration-1000 ${isPlaying ? 'opacity-100' : 'opacity-30'}`}></div>
@@ -217,7 +222,6 @@ export default function CloudPlayer({ songIds }: { songIds: string[] }) {
               <span className="text-[10px] font-black text-indigo-500 dark:text-indigo-400 tracking-widest uppercase bg-white/50 dark:bg-slate-900/50 px-2 py-0.5 rounded-sm shadow-sm transition-colors duration-700">Cloud Music</span>
               <span className="text-xs font-bold text-slate-600 dark:text-slate-300 bg-white/40 dark:bg-slate-700/50 px-2 rounded-full transition-colors duration-700">{currentIndex + 1} / {playlist.length}</span>
             </div>
-            {/* 【修改点】：歌曲标题和歌手加上暗色模式字体 */}
             <h3 className="text-xl font-bold text-slate-900 dark:text-white truncate drop-shadow-sm transition-colors duration-700">{currentSong.title}</h3>
             <p className="text-sm text-slate-700 dark:text-slate-300 font-medium truncate drop-shadow-sm transition-colors duration-700">{currentSong.artist}</p>
           </div>
@@ -244,7 +248,6 @@ export default function CloudPlayer({ songIds }: { songIds: string[] }) {
         </div>
       </div>
 
-      {/* 底部独立歌词长条：夜晚可以稍微更黑一点以凸显发光字体 */}
       <div className="md:col-span-12 order-last mt-4 rounded-3xl bg-slate-900/80 dark:bg-slate-950/90 backdrop-blur-xl border border-white/10 shadow-2xl p-5 flex items-center justify-between transition-all duration-700 hover:shadow-indigo-500/20 group min-h-[80px]">
         <div className="flex items-end justify-center gap-[4px] h-8 w-16">
           {isPlaying ? (
