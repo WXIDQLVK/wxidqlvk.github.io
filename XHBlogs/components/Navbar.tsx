@@ -32,12 +32,12 @@ export default function Navbar() {
 
   const navLinks = [
     { name: '首页', href: '/' },
-    { name: '项目', href: '/projects' },
     { name: '文章', href: '/timeline' },
-    { name: '杂谈', href: '/chatter' },
-    { name: '照片', href: '/photowall' },
     { name: '音乐', href: '/music' },
     { name: '说说', href: '/moments' },
+    { name: '照片', href: '/photowall' },
+    { name: '杂谈', href: '/chatter' },
+    { name: '项目', href: '/projects' },
   ];
 
   return (
