@@ -2,32 +2,26 @@
 
 import { useState, useRef, useEffect } from 'react';
 
-// 全局修复版 LRC 歌词解析函数：完美兼容所有歌词里 1位、2位、3位毫秒的小数时间戳（如 [00:34.3]），对所有歌曲全局生效
+// 安全解析 LRC 歌词（已修复支持1~3位小数）
 function parseLrc(lrcText: string) {
-  if (!lrcText || lrcText.length > 100000) return [];
-  const lines = lrcText.split(/\r?\n/);
+  if (!lrcText || lrcText.length > 20000) return [];
+  const lines = lrcText.split('\n');
   const result = [];
-  
-  // 核心正则：(\d{1,3}) 兼容单小数位、双小数位及三小数位的时间戳
-  const timeExp = /\[(\d+):(\d{2})(?:\.(\d{1,3}))?\]/g;
-
   for (let line of lines) {
-    const timeMatches = [...line.matchAll(timeExp)];
-    if (timeMatches.length > 0) {
-      const text = line.replace(timeExp, '').trim();
-      
-      for (const match of timeMatches) {
-        const min = parseInt(match[1], 10);
-        const sec = parseInt(match[2], 10);
-        const msStr = match[3] || '';
-        
-        let ms = 0;
-        if (msStr.length === 1) ms = parseInt(msStr, 10) * 100;
-        else if (msStr.length === 2) ms = parseInt(msStr, 10) * 10;
-        else if (msStr.length === 3) ms = parseInt(msStr, 10);
-
-        const time = min * 60 + sec + ms / 1000;
-        result.push({ time, text });
+    // 修改点：支持 1~3 位小数
+    const matches = [...line.matchAll(/\[(\d{2,}):(\d{2})(?:\.(\d{1,3}))?\]/g)];
+    if (matches.length > 0) {
+      const text = line.replace(/\[\d{2,}:\d{2}(?:\.\d{1,3})?\]/g, '').trim();
+      if (text) {
+        for (const match of matches) {
+          const min = parseInt(match[1]);
+          const sec = parseInt(match[2]);
+          const msStr = match[3] || '0';
+          // 根据小数位数正确计算毫秒
+          const ms = parseInt(msStr) / Math.pow(10, msStr.length);
+          const time = min * 60 + sec + ms;
+          result.push({ time, text });
+        }
       }
     }
   }
@@ -114,9 +108,8 @@ export default function CloudPlayer({ songIds }: { songIds: string[] }) {
         .then(res => { if (!res.ok) throw new Error("失败"); return res.text(); })
         .then(text => {
           if (isMounted) {
-            const parsed = parseLrc(text);
-            setLyrics(parsed);
-            setCurrentLyric(parsed.length > 0 ? "♪ 歌词加载完毕 ♪" : "♪ 纯享音乐 ♪");
+            setLyrics(parseLrc(text));
+            setCurrentLyric("♪ 歌词加载完毕 ♪");
           }
         })
         .catch(() => { if (isMounted) setCurrentLyric("♪ 纯享音乐 ♪"); });
@@ -163,7 +156,7 @@ export default function CloudPlayer({ songIds }: { songIds: string[] }) {
       setProgress((currentTime / (duration || 1)) * 100);
 
       if (lyrics.length > 0) {
-        const activeLyric = lyrics.slice().reverse().find(l => currentTime >= l.time && l.text);
+        const activeLyric = lyrics.slice().reverse().find(l => currentTime >= l.time);
         if (activeLyric && activeLyric.text !== currentLyric) {
           setCurrentLyric(activeLyric.text);
         }
