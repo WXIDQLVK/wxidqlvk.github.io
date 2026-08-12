@@ -34,10 +34,10 @@ export default function Navbar() {
     { name: '首页', href: '/' },
     { name: '项目', href: '/projects' },
     { name: '文章', href: '/timeline' },
+    { name: '杂谈', href: '/categories/notes' },
     { name: '照片', href: '/photowall' },
     { name: '音乐', href: '/music' },
     { name: '说说', href: '/moments' },
-    { name: '关于', href: '/about' },
   ];
 
   return (
@@ -87,7 +87,7 @@ export default function Navbar() {
         </div>
       </header>
 
-      {/* 🌟 核心微调：将下方空白占位稍微缩窄一点点（从 pt-20 改为 pt-[68px]） */}
+      {/* 🌟 核心微调：保持下方空白占位 */}
       <div className={`w-full pointer-events-none ${isStandalone ? 'pt-[68px] sm:pt-[76px] block' : 'hidden'}`} aria-hidden="true"></div>
     </>
   );
