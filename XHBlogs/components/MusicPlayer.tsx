@@ -2,19 +2,18 @@
 
 import { useState, useRef, useEffect } from 'react';
 
-// 终极升级版 LRC 歌词解析函数（完美支持各种变体、毫秒、多时间戳、空行对齐）
+// 全局修复版 LRC 歌词解析函数：完美兼容所有歌词里 1位、2位、3位毫秒的小数时间戳（如 [00:34.3]），对所有歌曲全局生效
 function parseLrc(lrcText: string) {
   if (!lrcText || lrcText.length > 100000) return [];
   const lines = lrcText.split(/\r?\n/);
   const result = [];
   
-  // 匹配形如 [01:23.45], [01:23.4], [01:23], [123:45.67] 的时间戳
+  // 核心正则：(\d{1,3}) 兼容单小数位、双小数位及三小数位的时间戳
   const timeExp = /\[(\d+):(\d{2})(?:\.(\d{1,3}))?\]/g;
 
   for (let line of lines) {
     const timeMatches = [...line.matchAll(timeExp)];
     if (timeMatches.length > 0) {
-      // 提取出所有时间戳之后的文本内容
       const text = line.replace(timeExp, '').trim();
       
       for (const match of timeMatches) {
@@ -22,14 +21,12 @@ function parseLrc(lrcText: string) {
         const sec = parseInt(match[2], 10);
         const msStr = match[3] || '';
         
-        // 智能换算毫秒：如果只有1位(如.1)代表百毫秒，2位代表十毫秒，3位代表毫秒
         let ms = 0;
         if (msStr.length === 1) ms = parseInt(msStr, 10) * 100;
         else if (msStr.length === 2) ms = parseInt(msStr, 10) * 10;
         else if (msStr.length === 3) ms = parseInt(msStr, 10);
 
         const time = min * 60 + sec + ms / 1000;
-        
         result.push({ time, text });
       }
     }
@@ -166,7 +163,6 @@ export default function CloudPlayer({ songIds }: { songIds: string[] }) {
       setProgress((currentTime / (duration || 1)) * 100);
 
       if (lyrics.length > 0) {
-        // 查找当前时间点对应的最后一句歌词，且必须有实际文本
         const activeLyric = lyrics.slice().reverse().find(l => currentTime >= l.time && l.text);
         if (activeLyric && activeLyric.text !== currentLyric) {
           setCurrentLyric(activeLyric.text);
@@ -285,7 +281,7 @@ export default function CloudPlayer({ songIds }: { songIds: string[] }) {
 
         <div className="w-16 flex justify-end">
           <svg className={`w-6 h-6 text-indigo-400/50 ${isPlaying ? 'animate-bounce' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWord="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
           </svg>
         </div>
       </div>
