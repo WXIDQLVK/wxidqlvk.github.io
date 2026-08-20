@@ -48,18 +48,13 @@ jobs:
           changed = False
           beijing_tz = timezone(timedelta(hours=8))
           now = datetime.now(beijing_tz).strftime("%Y-%m-%d %H:%M:%S")
-          now_quoted = f"'{now}'"   # 强制单引号格式
+          correct_date_line = f"date: '{now}'"
 
-          def is_valid_timestamp(val):
-              """
-              只有精确到秒的格式才算合格：
-              2026-08-21 06:17:05
-              （允许两端有单引号或双引号）
-              """
-              if val is None:
-                  return False
-              s = str(val).strip().strip("'\"")
-              return bool(re.match(r'^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}$', s))
+          # 严格匹配：只有 date: 'YYYY-MM-DD HH:MM:SS' 才算合格
+          valid_date_pattern = re.compile(
+              r"^date:\s*'(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2})'\s*$",
+              re.MULTILINE
+          )
 
           for path in files:
               if not os.path.isfile(path):
@@ -70,7 +65,7 @@ jobs:
                   with open(path, 'r', encoding='utf-8') as f:
                       content = f.read()
 
-                  # 1. 修复 images 格式
+                  # ---------- 1. 修复 images 格式 ----------
                   fixed_content = re.sub(
                       r'^images:\s*(?!$)(?!-\s)(.+)$', 
                       r'images:\n  - \1', 
@@ -83,31 +78,40 @@ jobs:
                       file_changed = True
                       print(f"🔧 Fixed images format in: {path}")
 
-                  post = frontmatter.loads(content)
+                  # ---------- 2. 检查并修复 date ----------
+                  # 先看有没有已经正确的 date 行
+                  match = valid_date_pattern.search(content)
                   
-                  date_val = post.metadata.get('date')
-                  
-                  # 2. 只有格式不合格时才写入当前时间
-                  if not is_valid_timestamp(date_val):
-                      # 直接用字符串替换的方式强制写成单引号格式
-                      # 这样可以精确控制输出为 date: '2026-08-21 06:17:05'
-                      content = re.sub(
+                  if match:
+                      # 已经是完美格式，什么都不动
+                      pass
+                  else:
+                      # 不合格（三个引号、双引号、无引号、缺秒数、没有 date 字段……）
+                      # 统一替换或插入成标准格式
+                      
+                      # 先尝试替换已有的 date 行（不管原来写成什么样）
+                      new_content = re.sub(
                           r'^date:\s*.*$',
-                          f"date: {now_quoted}",
+                          correct_date_line,
                           content,
                           flags=re.MULTILINE
                       )
-                      # 如果原来根本没有 date 字段，就插入到 frontmatter 里
-                      if 'date:' not in content:
+                      
+                      if new_content != content:
+                          content = new_content
+                          file_changed = True
+                          print(f"⏰ Fixed date format in: {path}")
+                      else:
+                          # 原来根本没有 date 字段，插入到 frontmatter 开头
                           content = re.sub(
                               r'^(---\s*\n)',
-                              f"\\1date: {now_quoted}\n",
+                              f"\\1{correct_date_line}\n",
                               content,
                               count=1,
                               flags=re.MULTILINE
                           )
-                      file_changed = True
-                      print(f"⏰ Set timestamp for: {path} (Old: {date_val})")
+                          file_changed = True
+                          print(f"⏰ Added missing date in: {path}")
 
                   if file_changed:
                       with open(path, 'w', encoding='utf-8') as f:
@@ -123,4 +127,12 @@ jobs:
 
       - name: Commit changes
         run: |
-          git config user.name
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: auto fix frontmatter (images & date)"
+            git push
+          fi
