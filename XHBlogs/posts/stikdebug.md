@@ -1,10 +1,10 @@
 ---
 cover: /posts/stikdebug.webp
-date: '2026-08-11 15:14:48'
+date: '''2026-08-21 06:16:24'''
 description: 手机独立开启JIT即时编译
 tags:
 - iOS
-- 'JIT'
+- JIT
 title: StikDebug本地调试
 ---
 
