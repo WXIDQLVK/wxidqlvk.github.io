@@ -31,12 +31,12 @@ export const siteConfig = {
   photoWallImage: "/images/bg2.webp",
   cloudMusicIds: ["1809646618", "3361076230", "1859390262"],
   social: {
-    github: "https://github.com",
-    gitee: "https://github.com/wxidqlvk",
-    google: "https://gitlab.com/wxidqlvk",
-    email: "q663397592@icloud.com",
-    qq: "663397592",
-    wechat: "WXIDQLVK",
+    Github: "https://github.com",
+    GitMe: "https://github.com/wxidqlvk",
+    Gitlab: "https://gitlab.com/wxidqlvk",
+    Email: "q663397592@icloud.com",
+    QQ: "663397592",
+    WeChat: "WXIDQLVK",
   },
   counts: {
     photos: 128, // 照片墙数量可以手动写死或动态计算
