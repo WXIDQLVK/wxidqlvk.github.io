@@ -65,10 +65,10 @@ jobs:
                   original = content
                   file_changed = False
 
-                  # 1. 修复 images 格式
+                  # 1. 修复 images 格式（- 前面没有空格）
                   content = re.sub(
                       r'^images:\s*(?!$)(?!-\s)(.+)$',
-                      r'images:\n  - \1',
+                      r'images:\n- \1',
                       content,
                       flags=re.MULTILINE
                   )
@@ -78,10 +78,8 @@ jobs:
 
                   # 2. 检查 date 是否已经是完美格式
                   if valid_re.search(content):
-                      # 已经合格，跳过
                       pass
                   else:
-                      # 不合格 → 强制替换成正确格式
                       new_content = re.sub(
                           r'^date:\s*.*$',
                           correct_line,
@@ -94,7 +92,6 @@ jobs:
                           file_changed = True
                           print(f"⏰ Fixed bad date: {path}")
                       else:
-                          # 原来没有 date 字段，插入一个
                           content = re.sub(
                               r'^(---\s*\n)',
                               f"\\1{correct_line}\n",
