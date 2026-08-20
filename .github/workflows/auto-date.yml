@@ -102,10 +102,10 @@ jobs:
                           file_changed = True
                           print(f"⏰ Added date: {path}")
 
-                  # 3. 只在 frontmatter 结束后「没有空行」时才补一个空行
-                  # 匹配：--- 后面直接跟着非空内容（中间没有空行）
+                  # 3. 只在结尾 --- 后面没有空行时，才补一个空行
+                  # 匹配：结尾的 --- 后面直接跟正文（中间没有空行）
                   new_content = re.sub(
-                      r'(---\s*\n)(?!\n)(\S)',
+                      r'(---\s*\n)([^\n])',
                       r'\1\n\2',
                       content,
                       count=1
@@ -113,7 +113,7 @@ jobs:
                   if new_content != content:
                       content = new_content
                       file_changed = True
-                      print(f"📄 Added missing blank line after frontmatter: {path}")
+                      print(f"📄 Added blank line after closing ---: {path}")
 
                   if file_changed:
                       with open(path, 'w', encoding='utf-8') as f:
