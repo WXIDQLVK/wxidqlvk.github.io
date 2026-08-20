@@ -65,7 +65,7 @@ jobs:
                   original = content
                   file_changed = False
 
-                  # 1. 修复 images 格式
+                  # 1. 修复 images 格式（- 前面没有空格）
                   content = re.sub(
                       r'^images:\s*(?!$)(?!-\s)(.+)$',
                       r'images:\n- \1',
@@ -78,10 +78,8 @@ jobs:
 
                   # 2. 检查 date 是否已经是完美格式
                   if valid_re.search(content):
-                      # 已经合格，跳过
                       pass
                   else:
-                      # 不合格 → 强制替换成正确格式
                       new_content = re.sub(
                           r'^date:\s*.*$',
                           correct_line,
@@ -94,7 +92,6 @@ jobs:
                           file_changed = True
                           print(f"⏰ Fixed bad date: {path}")
                       else:
-                          # 原来没有 date 字段，插入一个
                           content = re.sub(
                               r'^(---\s*\n)',
                               f"\\1{correct_line}\n",
@@ -104,6 +101,19 @@ jobs:
                           )
                           file_changed = True
                           print(f"⏰ Added date: {path}")
+
+                  # 3. 只在 frontmatter 结束后「没有空行」时才补一个空行
+                  # 匹配：--- 后面直接跟着非空内容（中间没有空行）
+                  new_content = re.sub(
+                      r'(---\s*\n)(?!\n)(\S)',
+                      r'\1\n\2',
+                      content,
+                      count=1
+                  )
+                  if new_content != content:
+                      content = new_content
+                      file_changed = True
+                      print(f"📄 Added missing blank line after frontmatter: {path}")
 
                   if file_changed:
                       with open(path, 'w', encoding='utf-8') as f:
@@ -116,7 +126,7 @@ jobs:
           if not changed:
               print("✅ No files need fixing.")
           else:
-              print("✅ All bad dates have been fixed.")
+              print("✅ All fixes applied.")
           EOF
 
       - name: Commit changes
@@ -127,6 +137,6 @@ jobs:
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "chore: auto fix frontmatter (images & date)"
+            git commit -m "chore: auto fix frontmatter (images & date & blank line)"
             git push
           fi
