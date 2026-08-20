@@ -26,7 +26,7 @@ jobs:
       - name: Install dependencies
         run: pip install python-frontmatter pyyaml
 
-      - name: Auto fix images and date format
+      - name: Auto fix images and strict date format
         run: |
           python << 'EOF'
           import frontmatter
@@ -48,7 +48,7 @@ jobs:
           changed = False
           beijing_tz = timezone(timedelta(hours=8))
           
-          # 【关键修复】只生成纯文本时间，绝对不在这里加单引号，交给 frontmatter 自动包装
+          # 只生成纯时间文本，交给 frontmatter 自动加上单引号
           now = datetime.now(beijing_tz).strftime('%Y-%m-%d %H:%M:%S')
 
           for path in files:
@@ -79,13 +79,16 @@ jobs:
                   date_val = post.metadata.get('date')
                   date_str = str(date_val or '').strip()
                   
-                  # 【关键修复】宽松正则：只要包含秒数（有没有单/双引号都行）就算合格
-                  has_seconds_pattern = re.compile(r"^['\"]?\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}['\"]?$")
+                  # 【最严格校验】必须同时满足：
+                  # 1. 必须由单引号或双引号包裹 (['\"])
+                  # 2. 内部必须精确到秒 (YYYY-MM-DD HH:MM:SS)
+                  # 只要少了一种引号或者缺了秒数，就会被判定为不合格
+                  strict_timestamp_pattern = re.compile(r"^['\"].*?\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}.*?['\"]$")
                   
-                  if not date_str or not has_seconds_pattern.match(date_str):
+                  if not date_str or not strict_timestamp_pattern.match(date_str):
                       post.metadata['date'] = now
                       file_changed = True
-                      print(f"⏰ Regenerated valid timestamp for: {path} (Old: {date_str})")
+                      print(f"⏰ Regenerated strict timestamp for: {path} (Old: {date_str})")
 
                   if file_changed:
                       with open(path, 'w', encoding='utf-8') as f:
@@ -107,6 +110,6 @@ jobs:
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "chore: auto fix frontmatter (images & date)"
+            git commit -m "chore: auto fix frontmatter with strict date rule"
             git push
           fi
