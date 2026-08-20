@@ -47,7 +47,7 @@ jobs:
 
           changed = False
           beijing_tz = timezone(timedelta(hours=8))
-          now = datetime.now(beijing_tz).strftime("%Y-%m-%d %H:%M:%S")
+          now = datetime.now(beijing_tz).strftime("'%Y-%m-%d %H:%M:%S'")
 
           for path in files:
               if not os.path.isfile(path):
