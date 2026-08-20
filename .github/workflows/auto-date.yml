@@ -47,7 +47,8 @@ jobs:
 
           changed = False
           beijing_tz = timezone(timedelta(hours=8))
-          now = datetime.now(beijing_tz).strftime("'%Y-%m-%d %H:%M:%S'")
+          # 不带单引号，只生成纯时间字符串
+          now = datetime.now(beijing_tz).strftime('%Y-%m-%d %H:%M:%S')
 
           for path in files:
               if not os.path.isfile(path):
@@ -75,9 +76,10 @@ jobs:
                   date_val = post.metadata.get('date')
                   date_str = str(date_val or '').strip()
                   
-                  has_strict_timestamp = re.compile(r"^'\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}'$")
+                  # 宽松一点匹配，只要带了秒数的（有没有单引号都行）就算合格
+                  has_seconds_pattern = re.compile(r"^['\"]?\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}['\"]?$")
                   
-                  if not date_str or not has_strict_timestamp.match(date_str):
+                  if not date_str or not has_seconds_pattern.match(date_str):
                       post.metadata['date'] = now
                       file_changed = True
                       print(f"⏰ Regenerated valid timestamp for: {path} (Old: {date_str})")
