@@ -6,7 +6,7 @@ on:
       - 'XHBlogs/moments/**/*.md'
       - 'XHBlogs/posts/**/*.md'
       - 'XHBlogs/chatters/**/*.md'
-  workflow_dispatch:
+  workflow_dispatch:   # 允许手动触发
 
 jobs:
   fix-frontmatter:
@@ -29,7 +29,6 @@ jobs:
       - name: Auto fix images and date format
         run: |
           python << 'EOF'
-          import frontmatter
           import os
           from datetime import datetime, timezone, timedelta
           import glob
@@ -48,11 +47,11 @@ jobs:
           changed = False
           beijing_tz = timezone(timedelta(hours=8))
           now = datetime.now(beijing_tz).strftime("%Y-%m-%d %H:%M:%S")
-          correct_date_line = f"date: '{now}'"
+          correct_line = f"date: '{now}'"
 
-          # 严格匹配：只有 date: 'YYYY-MM-DD HH:MM:SS' 才算合格
-          valid_date_pattern = re.compile(
-              r"^date:\s*'(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2})'\s*$",
+          # 只有这种格式才算合格：date: 'YYYY-MM-DD HH:MM:SS'
+          valid_re = re.compile(
+              r"^date:\s*'(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})'\s*$",
               re.MULTILINE
           )
 
@@ -60,58 +59,52 @@ jobs:
               if not os.path.isfile(path):
                   continue
               try:
-                  file_changed = False
-                  
                   with open(path, 'r', encoding='utf-8') as f:
                       content = f.read()
 
-                  # ---------- 1. 修复 images 格式 ----------
-                  fixed_content = re.sub(
-                      r'^images:\s*(?!$)(?!-\s)(.+)$', 
-                      r'images:\n  - \1', 
-                      content, 
+                  original = content
+                  file_changed = False
+
+                  # 1. 修复 images 格式
+                  content = re.sub(
+                      r'^images:\s*(?!$)(?!-\s)(.+)$',
+                      r'images:\n  - \1',
+                      content,
                       flags=re.MULTILINE
                   )
-                  
-                  if fixed_content != content:
-                      content = fixed_content
+                  if content != original:
                       file_changed = True
-                      print(f"🔧 Fixed images format in: {path}")
+                      print(f"🔧 Fixed images: {path}")
 
-                  # ---------- 2. 检查并修复 date ----------
-                  # 先看有没有已经正确的 date 行
-                  match = valid_date_pattern.search(content)
-                  
-                  if match:
-                      # 已经是完美格式，什么都不动
+                  # 2. 检查 date 是否已经是完美格式
+                  if valid_re.search(content):
+                      # 已经合格，跳过
                       pass
                   else:
-                      # 不合格（三个引号、双引号、无引号、缺秒数、没有 date 字段……）
-                      # 统一替换或插入成标准格式
-                      
-                      # 先尝试替换已有的 date 行（不管原来写成什么样）
+                      # 不合格 → 强制替换成正确格式
+                      # 先尝试替换已有的 date 行（无论原来写成什么样）
                       new_content = re.sub(
                           r'^date:\s*.*$',
-                          correct_date_line,
+                          correct_line,
                           content,
                           flags=re.MULTILINE
                       )
-                      
+
                       if new_content != content:
                           content = new_content
                           file_changed = True
-                          print(f"⏰ Fixed date format in: {path}")
+                          print(f"⏰ Fixed bad date: {path}")
                       else:
-                          # 原来根本没有 date 字段，插入到 frontmatter 开头
+                          # 原来没有 date 字段，插入一个
                           content = re.sub(
                               r'^(---\s*\n)',
-                              f"\\1{correct_date_line}\n",
+                              f"\\1{correct_line}\n",
                               content,
                               count=1,
                               flags=re.MULTILINE
                           )
                           file_changed = True
-                          print(f"⏰ Added missing date in: {path}")
+                          print(f"⏰ Added date: {path}")
 
                   if file_changed:
                       with open(path, 'w', encoding='utf-8') as f:
@@ -122,7 +115,9 @@ jobs:
                   print(f"⚠️ Skip {path}: {e}")
 
           if not changed:
-              print("No files need fixing.")
+              print("✅ No files need fixing.")
+          else:
+              print("✅ All bad dates have been fixed.")
           EOF
 
       - name: Commit changes
@@ -133,6 +128,6 @@ jobs:
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "chore: auto fix frontmatter (images & date)"
+            git commit -m "chore: force fix frontmatter date to single quotes"
             git push
           fi
