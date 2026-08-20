@@ -1,4 +1,4 @@
-name: Auto fill date
+Name: Auto fix frontmatter
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  fill-date:
+  fix-frontmatter:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -26,13 +26,14 @@ jobs:
       - name: Install dependencies
         run: pip install python-frontmatter pyyaml
 
-      - name: Auto fill missing date
+      - name: Auto fix images and date format
         run: |
           python << 'EOF'
           import frontmatter
           import os
           from datetime import datetime, timezone, timedelta
           import glob
+          import re
 
           patterns = [
               'XHBlogs/moments/**/*.md',
@@ -45,27 +46,58 @@ jobs:
               files.extend(glob.glob(p, recursive=True))
 
           changed = False
-          # 北京时间 = UTC+8，格式改成和你原来一样的
           beijing_tz = timezone(timedelta(hours=8))
-          now = datetime.now(beijing_tz).strftime('%Y-%m-%d %H:%M:%S')
+          # 生成带单引号、精确到秒的标准北京时间格式
+          now = datetime.now(beijing_tz).strftime("'%Y-%m-%d %H:%M:%S'")
 
           for path in files:
               if not os.path.isfile(path):
                   continue
               try:
-                  post = frontmatter.load(path)
-                  # 没有 date 或 date 为空字符串时才填充
-                  if 'date' not in post.metadata or not str(post.metadata.get('date') or '').strip():
+                  file_changed = False
+                  
+                  # 1. 文本级别预处理：修复 App 产生的错误单行 images 格式
+                  with open(path, 'r', encoding='utf-8') as f:
+                      content = f.read()
+
+                  # 匹配类似 images: /xxx 且没有换行的错误格式，将其转换为 YAML 列表
+                  fixed_content = re.sub(
+                      r'^images:\s*(?!$)(?!-\s)(.+)$', 
+                      r'images:\n  - \1', 
+                      content, 
+                      flags=re.MULTILINE
+                  )
+                  
+                  if fixed_content != content:
+                      content = fixed_content
+                      file_changed = True
+                      print(f"🔧 Fixed images format in: {path}")
+
+                  # 2. 用 frontmatter 加载解析并检查 date
+                  post = frontmatter.loads(content)
+                  
+                  date_val = post.metadata.get('date')
+                  date_str = str(date_val or '').strip()
+                  
+                  # 严格正则：必须带单引号、且精确到秒 (例如 '2026-08-21 20:30:27')
+                  has_strict_timestamp = re.compile(r"^'\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}'$")
+                  
+                  # 如果时间不符合严格格式（漏了秒数、没有单引号或为空），直接重新生成
+                  if not date_str or not has_strict_timestamp.match(date_str):
                       post.metadata['date'] = now
+                      file_changed = True
+                      print(f"⏰ Regenerated valid timestamp for: {path} (Old: {date_str})")
+
+                  if file_changed:
                       with open(path, 'w', encoding='utf-8') as f:
                           f.write(frontmatter.dumps(post))
-                      print(f"✅ Filled date for: {path}")
                       changed = True
+
               except Exception as e:
                   print(f"⚠️ Skip {path}: {e}")
 
           if not changed:
-              print("No files need date filling.")
+              print("No files need fixing.")
           EOF
 
       - name: Commit changes
@@ -76,6 +108,6 @@ jobs:
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "chore: auto fill missing date in frontmatter"
+            git commit -m "chore: auto fix frontmatter (images & date)"
             git push
           fi
