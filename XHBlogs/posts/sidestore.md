@@ -1,6 +1,6 @@
 ---
 cover: /posts/sidestore.webp
-date: '''2026-08-21 06:16:24'''
+date: '2026-08-21 06:16:24'
 description: 全程免电脑续签的开发者侧载工具
 tags:
 - 侧载
