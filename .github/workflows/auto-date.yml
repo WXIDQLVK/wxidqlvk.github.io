@@ -1,4 +1,4 @@
-name: Auto fix frontmatter
+name: Auto fill date
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  fix-frontmatter:
+  fill-date:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -26,14 +26,13 @@ jobs:
       - name: Install dependencies
         run: pip install python-frontmatter pyyaml
 
-      - name: Auto fix images and date format
+      - name: Auto fill missing date
         run: |
           python << 'EOF'
           import frontmatter
           import os
           from datetime import datetime, timezone, timedelta
           import glob
-          import re
 
           patterns = [
               'XHBlogs/moments/**/*.md',
@@ -46,54 +45,27 @@ jobs:
               files.extend(glob.glob(p, recursive=True))
 
           changed = False
+          # 北京时间 = UTC+8，格式改成和你原来一样的
           beijing_tz = timezone(timedelta(hours=8))
-          # 不带单引号，只生成纯时间字符串
           now = datetime.now(beijing_tz).strftime('%Y-%m-%d %H:%M:%S')
 
           for path in files:
               if not os.path.isfile(path):
                   continue
               try:
-                  file_changed = False
-                  
-                  with open(path, 'r', encoding='utf-8') as f:
-                      content = f.read()
-
-                  fixed_content = re.sub(
-                      r'^images:\s*(?!$)(?!-\s)(.+)$', 
-                      r'images:\n  - \1', 
-                      content, 
-                      flags=re.MULTILINE
-                  )
-                  
-                  if fixed_content != content:
-                      content = fixed_content
-                      file_changed = True
-                      print(f"🔧 Fixed images format in: {path}")
-
-                  post = frontmatter.loads(content)
-                  
-                  date_val = post.metadata.get('date')
-                  date_str = str(date_val or '').strip()
-                  
-                  # 宽松一点匹配，只要带了秒数的（有没有单引号都行）就算合格
-                  has_seconds_pattern = re.compile(r"^['\"]?\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}['\"]?$")
-                  
-                  if not date_str or not has_seconds_pattern.match(date_str):
+                  post = frontmatter.load(path)
+                  # 没有 date 或 date 为空字符串时才填充
+                  if 'date' not in post.metadata or not str(post.metadata.get('date') or '').strip():
                       post.metadata['date'] = now
-                      file_changed = True
-                      print(f"⏰ Regenerated valid timestamp for: {path} (Old: {date_str})")
-
-                  if file_changed:
                       with open(path, 'w', encoding='utf-8') as f:
                           f.write(frontmatter.dumps(post))
+                      print(f"✅ Filled date for: {path}")
                       changed = True
-
               except Exception as e:
                   print(f"⚠️ Skip {path}: {e}")
 
           if not changed:
-              print("No files need fixing.")
+              print("No files need date filling.")
           EOF
 
       - name: Commit changes
@@ -104,6 +76,6 @@ jobs:
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "chore: auto fix frontmatter (images & date)"
+            git commit -m "chore: auto fill missing date in frontmatter"
             git push
           fi
