@@ -19,10 +19,9 @@ import 'highlight.js/styles/atom-one-dark.css';
 import Navbar from '../../../components/Navbar';
 import PageTransition from '../../../components/PageTransition';
 import { siteConfig } from '../../../siteConfig';
-import ClientSocials from '../../../components/ClientSocials';
-import SidebarLyric from '../../../components/SidebarLyric';
 import BackButton from '../../../components/BackButton';
 import Comments from '../../../components/Comments';
+// 已移除 ClientSocials 和 SidebarLyric 的杂谈详情页导入
 
 export async function generateStaticParams() {
   const chattersDirectory = path.join(process.cwd(), 'chatters');
@@ -66,7 +65,6 @@ async function getChatterData(slug: string) {
     }
 
     // 偶数索引是正文。把 3 个以上的连续 \n 替换为真实的 <br> 标签。
-    // （3 个 \n 相当于中间空了 1 行真正的空白）
     return block.replace(/\n{3,}/g, (match) => {
       const brCount = match.length - 2;
       return '\n\n' + '<br>'.repeat(brCount) + '\n\n';
@@ -162,8 +160,6 @@ export default async function ChatterDetail({ params }: { params: Promise<{ slug
                   {chatterData.title}
                 </h1>
 
-                {/* ✅ 前端展示版：特权修改按钮已彻底移除！ */}
-
                 <div className="flex flex-wrap items-center gap-2 md:gap-3">
                   <div className="flex items-center gap-1.5 md:gap-2 text-indigo-700 dark:text-indigo-400 font-bold bg-indigo-500/5 dark:bg-indigo-400/10 px-3 md:px-4 py-1.5 md:py-2 rounded-2xl text-xs md:text-sm border border-indigo-500/10">
                     <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -205,7 +201,6 @@ export default async function ChatterDetail({ params }: { params: Promise<{ slug
                   
                   .prose del { text-decoration-color: inherit !important; opacity: 0.6; }
 
-                  /* 🌟 引用块专属果冻极客风样式补丁 */
                   .prose blockquote {
                     border-left: 4px solid #6366f1 !important;
                     background-color: rgba(99, 102, 241, 0.05) !important;
@@ -287,16 +282,7 @@ export default async function ChatterDetail({ params }: { params: Promise<{ slug
           </article>
 
           <aside className="w-full lg:w-[320px] flex flex-col gap-6 flex-shrink-0">
-            <div className="bg-white/60 dark:bg-slate-800/50 backdrop-blur-xl rounded-3xl p-6 border border-white/40 dark:border-white/10 shadow-xl text-center">
-              <div className="w-20 h-20 mx-auto rounded-full p-1 bg-gradient-to-tr from-indigo-500 to-purple-500 shadow-md mb-4 hover:rotate-3 transition-transform">
-                <img src={siteConfig.avatarUrl} alt="avatar" className="w-full h-full rounded-full object-cover bg-white" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{siteConfig.authorName}</h3>
-              <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-medium mb-4">{siteConfig.bio}</p>
-              <ClientSocials />
-            </div>
-
-            <SidebarLyric />
+            {/* 个人简介和音乐播放组件已被精准移除 */}
 
             <div className="bg-white/60 dark:bg-slate-800/50 backdrop-blur-xl rounded-3xl p-6 border border-white/40 dark:border-white/10 shadow-xl">
               <div className="flex justify-between items-center mb-6">
