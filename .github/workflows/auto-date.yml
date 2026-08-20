@@ -47,7 +47,8 @@ jobs:
 
           changed = False
           beijing_tz = timezone(timedelta(hours=8))
-          # 修正1：只生成纯时间字符串，不带任何外层引号
+          
+          # 【关键修复】只生成纯文本时间，绝对不在这里加单引号，交给 frontmatter 自动包装
           now = datetime.now(beijing_tz).strftime('%Y-%m-%d %H:%M:%S')
 
           for path in files:
@@ -59,6 +60,7 @@ jobs:
                   with open(path, 'r', encoding='utf-8') as f:
                       content = f.read()
 
+                  # 1. 修复单行错误的 images 格式
                   fixed_content = re.sub(
                       r'^images:\s*(?!$)(?!-\s)(.+)$', 
                       r'images:\n  - \1', 
@@ -71,12 +73,13 @@ jobs:
                       file_changed = True
                       print(f"🔧 Fixed images format in: {path}")
 
+                  # 2. 用 frontmatter 加载并检查 date
                   post = frontmatter.loads(content)
                   
                   date_val = post.metadata.get('date')
                   date_str = str(date_val or '').strip()
                   
-                  # 修正2：宽松匹配，只要格式里没有包含秒数的（比如只有年月日），就判定为不合格
+                  # 【关键修复】宽松正则：只要包含秒数（有没有单/双引号都行）就算合格
                   has_seconds_pattern = re.compile(r"^['\"]?\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}['\"]?$")
                   
                   if not date_str or not has_seconds_pattern.match(date_str):
