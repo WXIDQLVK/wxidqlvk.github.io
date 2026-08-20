@@ -49,7 +49,6 @@ jobs:
           now = datetime.now(beijing_tz).strftime("%Y-%m-%d %H:%M:%S")
           correct_line = f"date: '{now}'"
 
-          # 只有这种格式才算合格：date: 'YYYY-MM-DD HH:MM:SS'
           valid_re = re.compile(
               r"^date:\s*'(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})'\s*$",
               re.MULTILINE
@@ -76,17 +75,14 @@ jobs:
                       file_changed = True
                       print(f"🔧 Fixed images: {path}")
 
-                  # 2. 检查 date 是否已经是完美格式
-                  if valid_re.search(content):
-                      pass
-                  else:
+                  # 2. 修复 date
+                  if not valid_re.search(content):
                       new_content = re.sub(
                           r'^date:\s*.*$',
                           correct_line,
                           content,
                           flags=re.MULTILINE
                       )
-
                       if new_content != content:
                           content = new_content
                           file_changed = True
@@ -102,18 +98,26 @@ jobs:
                           file_changed = True
                           print(f"⏰ Added date: {path}")
 
-                  # 3. 只在结尾 --- 后面没有空行时，才补一个空行
-                  # 匹配：结尾的 --- 后面直接跟正文（中间没有空行）
-                  new_content = re.sub(
-                      r'(---\s*\n)([^\n])',
-                      r'\1\n\2',
-                      content,
-                      count=1
-                  )
-                  if new_content != content:
-                      content = new_content
-                      file_changed = True
-                      print(f"📄 Added blank line after closing ---: {path}")
+                  # 3. 只处理结尾的 ---（最后一个），没有空行才补
+                  # 用 split 精确找到结尾的 ---
+                  if content.count('---') >= 2:
+                      parts = content.split('---', 2)
+                      front = parts[0] + '---' + parts[1] + '---'
+                      body = parts[2]
+
+                      if body.startswith('\n\n'):
+                          # 已经有空行，不动
+                          pass
+                      elif body.startswith('\n'):
+                          # 只有一个换行，补成两个
+                          content = front + '\n' + body
+                          file_changed = True
+                          print(f"📄 Added blank line after closing ---: {path}")
+                      else:
+                          # 完全没有换行，补两个
+                          content = front + '\n\n' + body
+                          file_changed = True
+                          print(f"📄 Added blank line after closing ---: {path}")
 
                   if file_changed:
                       with open(path, 'w', encoding='utf-8') as f:
