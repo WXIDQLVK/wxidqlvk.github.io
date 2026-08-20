@@ -1,4 +1,4 @@
-Name: Auto fix frontmatter
+name: Auto fix frontmatter
 
 on:
   push:
@@ -47,7 +47,6 @@ jobs:
 
           changed = False
           beijing_tz = timezone(timedelta(hours=8))
-          # 生成带单引号、精确到秒的标准北京时间格式
           now = datetime.now(beijing_tz).strftime("'%Y-%m-%d %H:%M:%S'")
 
           for path in files:
@@ -56,11 +55,9 @@ jobs:
               try:
                   file_changed = False
                   
-                  # 1. 文本级别预处理：修复 App 产生的错误单行 images 格式
                   with open(path, 'r', encoding='utf-8') as f:
                       content = f.read()
 
-                  # 匹配类似 images: /xxx 且没有换行的错误格式，将其转换为 YAML 列表
                   fixed_content = re.sub(
                       r'^images:\s*(?!$)(?!-\s)(.+)$', 
                       r'images:\n  - \1', 
@@ -73,16 +70,13 @@ jobs:
                       file_changed = True
                       print(f"🔧 Fixed images format in: {path}")
 
-                  # 2. 用 frontmatter 加载解析并检查 date
                   post = frontmatter.loads(content)
                   
                   date_val = post.metadata.get('date')
                   date_str = str(date_val or '').strip()
                   
-                  # 严格正则：必须带单引号、且精确到秒 (例如 '2026-08-21 20:30:27')
                   has_strict_timestamp = re.compile(r"^'\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}'$")
                   
-                  # 如果时间不符合严格格式（漏了秒数、没有单引号或为空），直接重新生成
                   if not date_str or not has_strict_timestamp.match(date_str):
                       post.metadata['date'] = now
                       file_changed = True
