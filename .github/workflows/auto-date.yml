@@ -6,7 +6,7 @@ on:
       - 'XHBlogs/moments/**/*.md'
       - 'XHBlogs/posts/**/*.md'
       - 'XHBlogs/chatters/**/*.md'
-  workflow_dispatch:   # 允许手动触发
+  workflow_dispatch:
 
 jobs:
   fix-frontmatter:
@@ -82,7 +82,6 @@ jobs:
                       pass
                   else:
                       # 不合格 → 强制替换成正确格式
-                      # 先尝试替换已有的 date 行（无论原来写成什么样）
                       new_content = re.sub(
                           r'^date:\s*.*$',
                           correct_line,
@@ -128,6 +127,6 @@ jobs:
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "chore: force fix frontmatter date to single quotes"
+            git commit -m "chore: auto fix frontmatter (images & date)"
             git push
           fi
