@@ -1,6 +1,6 @@
 ---
 cover: /chatters/death.webp
-date: '2026-08-11 21:36:06'
+date: '2026-08-11'
 description: ''
 mood: 新闻
 tags:
