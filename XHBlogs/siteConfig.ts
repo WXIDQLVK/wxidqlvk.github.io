@@ -33,7 +33,7 @@ export const siteConfig = {
   social: {
     github: "https://github.com",
     gitee: "https://github.com/wxidqlvk",
-    google: "https://www.google.com",
+    google: "https://gitlab.com/wxidqlvk",
     email: "q663397592@icloud.com",
     qq: "663397592",
     wechat: "WXIDQLVK",
