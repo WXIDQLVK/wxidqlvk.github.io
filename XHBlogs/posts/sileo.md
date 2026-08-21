@@ -5,7 +5,7 @@ description: 苹果现代越狱插件商店
 tags:
 - Store
 - 越狱
-title: Sileo越狱商店
+title: Sileo越狱商店 
 ---
 
 ## https://getsileo.app

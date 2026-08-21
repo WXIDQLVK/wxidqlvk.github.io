@@ -7,7 +7,7 @@ tags:
 - 3A
 - 游戏
 - 移植
-title: 《死亡搁浅》登录App Store
+title: 《死亡搁浅》登录App Store 
 ---
 
 《死亡搁浅》（Death Stranding）是传奇制作人小岛秀夫独立开发、2019年首发的开放世界科幻动作冒险游戏
