@@ -129,17 +129,17 @@ jobs:
                       file_changed = True
                       print(f"🔧 Fixed images format: {path}")
 
-                  # 1.3 修复 tags 格式（更加严格，防止把空行或特殊符号解析成 - -）
+                  # 1.3 修复 tags 格式（顶格显示，破折号前无空格）
                   def fix_tags(match):
                       tag_val = match.group(1).strip()
                       if not tag_val or tag_val.startswith('-') or tag_val.startswith('\n'):
                           return match.group(0)
-                      # 严格使用逗号或中文逗号分割，不盲目按空格切片，并过滤空项与横杠
+                      # 严格使用逗号或中文逗号分割，并过滤空项与横杠
                       tags = [t.strip() for t in re.split(r'[,，]+', tag_val) if t.strip() and t.strip() != '-']
                       if not tags:
                           return match.group(0)
-                      # 严格保持带 2 个空格缩进的规范列表格式
-                      formatted_tags = "tags:\n" + "\n".join(f"  - {t}" for t in tags)
+                      # 顶格格式：去掉前面的空格，直接用 - {t}
+                      formatted_tags = "tags:\n" + "\n".join(f"- {t}" for t in tags)
                       return formatted_tags
 
                   content = re.sub(
@@ -193,7 +193,7 @@ jobs:
                       body = parts[2]
 
                       if body.startswith('\n\n'):
-                          pass
+                        pass
                       elif body.startswith('\n'):
                           content = front + '\n' + body
                           file_changed = True
