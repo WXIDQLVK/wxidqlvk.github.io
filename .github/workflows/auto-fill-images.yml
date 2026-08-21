@@ -1,7 +1,7 @@
 name: Auto Fill Moments Images
 
 on:
-  push: # 只要有任何推送就触发，确保能跑起来
+  push:
 
 jobs:
   fill-images:
@@ -19,10 +19,9 @@ jobs:
 
       - name: Precise sync images
         run: |
-          python3 -c "
+          python3 - << 'EOF'
           import os, glob, re
 
-          # 1. 找到所有 moments 下的 .md 文件
           md_files = glob.glob('moments/**/*.md', recursive=True) + glob.glob('public/moments/**/*.md', recursive=True)
           if not md_files:
               print('未找到 md 文件')
@@ -34,7 +33,6 @@ jobs:
           with open(latest_md, 'r', encoding='utf-8') as f:
               content = f.read()
 
-          # 2. 从文件名中精准提取出标题和日期
           basename = os.path.basename(latest_md)
           name_match = re.match(r'(\d{4})-(\d{2})-(\d{2})-(.+)\.md', basename)
           
@@ -47,7 +45,6 @@ jobs:
 
           print(f'解析结果 -> 标题: {title}, 日期: {year}/{month}/{day}')
 
-          # 3. 精准拼出图片文件夹的路径
           target_dirs = glob.glob(f'**/moments/**/{title}/{year}/{month}/{day}', recursive=True)
           if not target_dirs:
               target_dirs = glob.glob(f'**/{title}/{year}/{month}/{day}', recursive=True)
@@ -59,7 +56,6 @@ jobs:
           img_folder = target_dirs[0]
           print(f'成功锁定图片文件夹: {img_folder}')
 
-          # 4. 获取该文件夹下的所有图片
           images = sorted(glob.glob(os.path.join(img_folder, '*.jpg')) + glob.glob(os.path.join(img_folder, '*.png')) + glob.glob(os.path.join(img_folder, '*.JPG')) + glob.glob(os.path.join(img_folder, '*.PNG')))
 
           if images:
@@ -73,7 +69,6 @@ jobs:
 
               print(f'获取到的图片路径列表: {img_paths}')
 
-              # 5. 替换 Markdown 里的 images 列表
               images_yaml = 'images:\n' + '\n'.join([f'  - {p}' for p in img_paths])
               new_content = re.sub(r'images:\s*(\n\s*-\s*[^\r\n]+)*', images_yaml, content)
 
@@ -81,7 +76,7 @@ jobs:
                   with open(latest_md, 'w', encoding='utf-8') as f:
                       f.write(new_content)
                   print('成功写入全部图片路径！')
-          "
+          EOF
 
           git add .
           if git diff --cached --quiet; then
