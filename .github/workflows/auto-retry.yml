@@ -1,24 +1,22 @@
-name: Auto Retry on Failure
+name: 自动重新构建网页
 
 on:
   workflow_run:
-    # 这里精准对准经常报错的那个构建发布工作流
-    workflows: ["Deploy Next.js site to Pages"] 
+    workflows: ["Deploy Next.js site to Pages"]
     types:
       - completed
 
 jobs:
-  retry:
+  trigger-new-build:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'failure' && github.event.workflow_run.run_attempt == 1 }}
-    permissions:
-      actions: write
     steps:
-      - name: Automatically rerun failed workflow
+      - name: Wait for 10 seconds
+        run: sleep 10
+
+      - name: Dispatch a fresh build
         env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
-          GH_TOKEN: ${{ github.token }}
-          RUN_ID: ${{ github.event.workflow_run.id }}
         run: |
-          echo "检测到网站部署失败，正在自动重新触发..."
-          gh run rerun $RUN_ID --failed
+          echo "正在派发一次全新的构建任务..."
+          gh workflow run "Deploy Next.js site to Pages"
