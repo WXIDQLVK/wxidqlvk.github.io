@@ -48,12 +48,10 @@ jobs:
               target_dirs = glob.glob(f'**/{title}/{year}/{month}/{day}', recursive=True)
 
           if not target_dirs:
-              print(f'没有找到对应的图片文件夹: {title}/{year}/{month}/{day}')
+              print('没有找到对应的图片文件夹')
               exit(0)
 
           img_folder = target_dirs[0]
-          print(f'成功锁定图片文件夹: {img_folder}')
-
           images = sorted(glob.glob(os.path.join(img_folder, '*.jpg')) + glob.glob(os.path.join(img_folder, '*.png')) + glob.glob(os.path.join(img_folder, '*.JPG')) + glob.glob(os.path.join(img_folder, '*.PNG')))
 
           if images:
@@ -65,40 +63,22 @@ jobs:
                       rel = '/moments' + rel.split('/moments')[1]
                   img_paths.append(rel)
 
-              print(f'获取到的图片路径列表: {img_paths}')
-
-              # 构建新的 images yaml 块
+              # 核心修正：严格按照图2的格式，'-' 前面加 2 个空格
               images_yaml = 'images:\n' + '\n'.join([f'  - {p}' for p in img_paths])
 
-              # 使用更强力的字符串替换：找到 moments 路径开头的单行 images 并整段替换
-              # 或者直接把现有的 images 这一行替换掉
-              if 'images:' in content:
-                  # 把 moments/xxx/.../1.jpg 这一整行或多行替换掉
-                  old_block_match = re.search(r'(images:\s*(\n\s*-\s*[^\r\n]+)+)', content)
-                  if old_block_match:
-                      new_content = content.replace(old_block_match.group(1), images_yaml)
-                  else:
-                      # 如果只有单行
-                      old_line_match = re.search(r'(images:\s*[^\r\n]+)', content)
-                      if old_line_match:
-                        new_content = content.replace(old_line_match.group(1), images_yaml)
-                      else:
-                        new_content = content
-              else:
-                  new_content = content
+              # 精准替换旧的 images 字段到下一个字段之前的内容
+              new_content = re.sub(r'images:\s*(\n\s*-\s*[^\r\n]+)*', images_yaml, content)
 
               if new_content != content:
                   with open(latest_md, 'w', encoding='utf-8') as f:
                       f.write(new_content)
-                  print('成功强制写入全部图片路径！')
-              else:
-                  print('内容未发生变化')
+                  print('成功生成图2一样的多行图片列表！')
           EOF
 
           git add .
           if git diff --cached --quiet; then
               echo "没有变动"
           else
-              git commit -m "Force sync all moment images [skip ci]"
+              git commit -m "Match exact image format [skip ci]"
               git push
           fi
