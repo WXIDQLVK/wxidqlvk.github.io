@@ -2,6 +2,8 @@ name: Auto Fill Moments Images
 
 on:
   push:
+    paths:
+      - 'public/moments/**' # 只要图片文件夹有变动就触发
 
 jobs:
   fill-images:
@@ -17,68 +19,58 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.io"
 
-      - name: Precise sync images
+      - name: Sync images for target md
         run: |
           python3 - << 'EOF'
-          import os, glob, re
+          import os, re
 
-          md_files = glob.glob('moments/**/*.md', recursive=True) + glob.glob('public/moments/**/*.md', recursive=True)
-          if not md_files:
-              print('未找到 md 文件')
-              exit(0)
-
-          latest_md = max(md_files, key=os.path.getmtime)
-          print(f'正在处理文件: {latest_md}')
-
-          with open(latest_md, 'r', encoding='utf-8') as f:
-              content = f.read()
-
-          basename = os.path.basename(latest_md)
-          name_match = re.match(r'(\d{4})-(\d{2})-(\d{2})-(.+)\.md', basename)
+          # 1. 设置路径映射规则
+          # 假设上传的图片文件夹路径是：public/moments/标题/年/月/日
+          # 我们需要寻找的 md 路径是：moments/年-月-日-标题.md
           
-          if name_match:
-              year, month, day, title = name_match.groups()
-          else:
-              year, month, day = '2026', '08', '21'
-              title_m = re.search(r'^title:\s*(.+)$', content, re.MULTILINE)
-              title = title_m.group(1).strip().strip('\"\'') if title_m else 'unknown'
-
-          target_dirs = glob.glob(f'**/moments/**/{title}/{year}/{month}/{day}', recursive=True)
-          if not target_dirs:
-              target_dirs = glob.glob(f'**/{title}/{year}/{month}/{day}', recursive=True)
-
-          if not target_dirs:
-              print('没有找到对应的图片文件夹')
-              exit(0)
-
-          img_folder = target_dirs[0]
-          images = sorted(glob.glob(os.path.join(img_folder, '*.jpg')) + glob.glob(os.path.join(img_folder, '*.png')) + glob.glob(os.path.join(img_folder, '*.JPG')) + glob.glob(os.path.join(img_folder, '*.PNG')))
-
-          if images:
-              img_paths = []
-              for img in images:
-                  rel = img.replace('public', '', 1).replace('\\', '/')
-                  if not rel.startswith('/'): rel = '/' + rel
-                  if '/moments/' in rel:
-                      rel = '/moments' + rel.split('/moments')[1]
-                  img_paths.append(rel)
-
-              # 核心修正：严格按照图2的格式，'-' 前面加 2 个空格
-              images_yaml = 'images:\n' + '\n'.join([f'  - {p}' for p in img_paths])
-
-              # 精准替换旧的 images 字段到下一个字段之前的内容
-              new_content = re.sub(r'images:\s*(\n\s*-\s*[^\r\n]+)*', images_yaml, content)
-
-              if new_content != content:
-                  with open(latest_md, 'w', encoding='utf-8') as f:
-                      f.write(new_content)
-                  print('成功生成图2一样的多行图片列表！')
+          # 这里通过遍历判断是否有匹配的图片文件夹，防止 Action 对所有文件都跑一遍
+          found_folder = None
+          for root, dirs, files in os.walk('public/moments'):
+              # 简单的路径拆解：['public', 'moments', '标题', '年', '月', '日']
+              parts = root.split(os.sep)
+              if len(parts) >= 6:
+                  title = parts[2]
+                  year, month, day = parts[3], parts[4], parts[5]
+                  
+                  # 对应的 md 文件名
+                  md_filename = f"{year}-{month}-{day}-{title}.md"
+                  md_path = os.path.join('moments', md_filename)
+                  
+                  if os.path.exists(md_path):
+                      # 找到匹配了，开始处理
+                      images = sorted([f for f in files if f.lower().endswith(('.jpg', '.png', '.jpeg'))])
+                      if not images: continue
+                      
+                      # 构建多行 yaml
+                      yaml_lines = ["images:"]
+                      for img in images:
+                          yaml_lines.append(f"  - /moments/{title}/{year}/{month}/{day}/{img}")
+                      new_block = "\n".join(yaml_lines)
+                      
+                      # 读取 md 并替换
+                      with open(md_path, 'r', encoding='utf-8') as f:
+                          content = f.read()
+                          
+                      pattern = r'images:\s*(\n\s*-\s*[^\r\n]+)*'
+                      if re.search(pattern, content):
+                          new_content = re.sub(pattern, new_block, content)
+                      else:
+                          # 没找到 images 字段就插在 title 下面
+                          new_content = re.sub(r'(title:.*)', r'\1\n' + new_block, content)
+                          
+                      if new_content != content:
+                          with open(md_path, 'w', encoding='utf-8') as f:
+                              f.write(new_content)
+                          print(f"成功更新: {md_path}")
           EOF
 
           git add .
-          if git diff --cached --quiet; then
-              echo "没有变动"
-          else
-              git commit -m "Match exact image format [skip ci]"
+          if not git diff --cached --quiet; then
+              git commit -m "Auto sync images for moments"
               git push
           fi
