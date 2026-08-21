@@ -1,4 +1,4 @@
-name: Auto Retry on Failure
+name: Auto Fix and Retry on Failure
 
 on:
   workflow_run:
@@ -7,20 +7,40 @@ on:
       - completed
 
 jobs:
-  retry:
+  fix-and-retry:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'failure' && github.event.workflow_run.run_attempt == 1 }}
     permissions:
-      actions: write
+      contents: write
     steps:
-      - name: Wait for 1 minute
-        run: sleep 60
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Automatically rerun failed workflow
-        env:
-          GH_REPO: ${{ github.repository }}
-          GH_TOKEN: ${{ github.token }}
-          RUN_ID: ${{ github.event.workflow_run.id }}
+      - name: Configure Git identity
         run: |
-          echo "等待结束，正在触发自动重试..."
-          gh run rerun $RUN_ID --failed
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.io"
+
+      - name: Add space after title and push
+        run: |
+          # 寻找最近修改过的那篇 Markdown 文件
+          LATEST_FILE=$(git log -1 --name-only --pretty="" | grep "\.md$" | head -n 1)
+          
+          if [ -z "$LATEST_FILE" ]; then
+            LATEST_FILE=$(find . -name "*.md" | head -n 1)
+          fi
+
+          echo "正在处理文件: $LATEST_FILE"
+          
+          if [ -f "$LATEST_FILE" ]; then
+            # 精准定位 title: 那一行，在文字末尾自动加一个空格
+            sed -i '/^title:/s/$/ /' "$LATEST_FILE"
+            
+            git add "$LATEST_FILE"
+            git commit -m "Auto-fix: add space to title for successful rebuild"
+            git push
+          else
+            echo "未找到 Markdown 文件"
+          fi
