@@ -23,20 +23,30 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.io"
 
-      - name: Add space after title and push
+      - name: Modify latest markdown file and push
         run: |
-          # 寻找最近修改过的那篇 Markdown 文件
-          LATEST_FILE=$(git log -1 --name-only --pretty="" | grep "\.md$" | head -n 1)
+          # 找出最近修改的那篇 Markdown 文件
+          LATEST_FILE=$(ls -t $(find . -name "*.md" -not -path "*/.*") 2>/dev/null | head -n 1)
           
-          if [ -z "$LATEST_FILE" ]; then
-            LATEST_FILE=$(find . -name "*.md" | head -n 1)
-          fi
-
           echo "正在处理文件: $LATEST_FILE"
           
           if [ -f "$LATEST_FILE" ]; then
-            # 精准定位 title: 那一行，在文字末尾自动加一个空格
-            sed -i '/^title:/s/$/ /' "$LATEST_FILE"
+            # 使用 Python 安全地在 title 标题后面加一个空格
+            python3 -c "
+            path = '$LATEST_FILE'
+            with open(path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            
+            import re
+            new_content, count = re.subn(r'(^title:\s*[^\r\n]+)', r'\1 ', content, flags=re.MULTILINE)
+            
+            if count > 0:
+                with open(path, 'w', encoding='utf-8') as f:
+                    f.write(new_content)
+                print('已成功在标题后加空格')
+            else:
+                print('未找到匹配的 title 行')
+            "
             
             git add "$LATEST_FILE"
             git commit -m "Auto-fix: add space to title for successful rebuild"
