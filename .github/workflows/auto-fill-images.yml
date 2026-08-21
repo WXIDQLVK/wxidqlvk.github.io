@@ -1,10 +1,7 @@
 name: Auto Fill Moments Images
 
 on:
-  push:
-    paths:
-      - 'moments/**'
-      - 'public/moments/**'
+  push: # 只要有任何推送就触发，确保能跑起来
 
 jobs:
   fill-images:
@@ -37,26 +34,22 @@ jobs:
           with open(latest_md, 'r', encoding='utf-8') as f:
               content = f.read()
 
-          # 2. 从文件名 \"2026-08-21-玉面鬼竖.md\" 中精准提取出标题 \"玉面鬼竖\" 和日期 \"2026/08/21\"
+          # 2. 从文件名中精准提取出标题和日期
           basename = os.path.basename(latest_md)
-          # 匹配 形如 2026-08-21-标题.md 的格式
           name_match = re.match(r'(\d{4})-(\d{2})-(\d{2})-(.+)\.md', basename)
           
           if name_match:
               year, month, day, title = name_match.groups()
           else:
-              # 兜底：如果文件名没有日期前缀，就去内容里找 title 和 date
               year, month, day = '2026', '08', '21'
               title_m = re.search(r'^title:\s*(.+)$', content, re.MULTILINE)
               title = title_m.group(1).strip().strip('\"\'') if title_m else 'unknown'
 
           print(f'解析结果 -> 标题: {title}, 日期: {year}/{month}/{day}')
 
-          # 3. 精准拼出图片文件夹的路径：玉面鬼竖/2026/08/21
-          # 可能是在 moments/玉面鬼竖/... 或者是 public/moments/玉面鬼竖/...
+          # 3. 精准拼出图片文件夹的路径
           target_dirs = glob.glob(f'**/moments/**/{title}/{year}/{month}/{day}', recursive=True)
           if not target_dirs:
-              # 换一种宽松点的匹配
               target_dirs = glob.glob(f'**/{title}/{year}/{month}/{day}', recursive=True)
 
           if not target_dirs:
