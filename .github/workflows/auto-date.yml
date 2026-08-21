@@ -87,7 +87,7 @@ jobs:
                   except Exception as e:
                       print(f"⚠️ Error filling images for {md_file}: {e}")
 
-          # ==================== 第二部分：修复格式、日期与空行 ====================
+          # ==================== 第二部分：修复格式、标签、日期与空行 ====================
           patterns = [
               'XHBlogs/moments/**/*.md',
               'XHBlogs/posts/**/*.md',
@@ -128,6 +128,28 @@ jobs:
                   if content != original:
                       file_changed = True
                       print(f"🔧 Fixed images format: {path}")
+
+                  # 1.3 修复 tags 格式（把单行 tags: xxx 转换为多行 - 列表格式）
+                  def fix_tags(match):
+                      tag_val = match.group(1).strip()
+                      # 如果已经是多行或者空的，就不动
+                      if not tag_val or tag_val.startswith('\n'):
+                          return match.group(0)
+                      # 按照空格、逗号或顿号把标签拆开
+                      tags = [t.strip() for t in re.split(r'[,，\s]+', tag_val) if t.strip()]
+                      if not tags:
+                          return match.group(0)
+                      formatted_tags = "tags:\n" + "\n".join(f"- {t}" for t in tags)
+                      return formatted_tags
+
+                  content = re.sub(
+                      r'^tags:\s*([^\r\n\-].*)$',
+                      fix_tags,
+                      content,
+                      flags=re.MULTILINE
+                  )
+                  if content != original:
+                      file_changed = True
 
                   # 1.5 删除图片路径中的 /XHBlogs/public
                   new_content = re.sub(
@@ -202,6 +224,6 @@ jobs:
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "chore: auto fill images and fix frontmatter"
+            git commit -m "chore: auto fill images, fix tags and frontmatter"
             git push
           fi
