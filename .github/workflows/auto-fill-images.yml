@@ -1,0 +1,100 @@
+name: Auto Fill Moments Images
+
+on:
+  push:
+    paths:
+      - 'moments/**' # 严格限制：只对 moments 目录下的文件变动生效
+
+jobs:
+  fill-images:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure Git identity
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.io"
+
+      - name: Smart detect and fill images for moments
+        run: |
+          python3 -c "
+          import os, glob, re
+
+          # 寻找最近修改或新增的 moments 下的 .md 文件
+          md_files = glob.glob('moments/**/*.md', recursive=True) + glob.glob('public/moments/**/*.md', recursive=True)
+          if not md_files:
+              print('没有找到 moments 的 md 文件')
+              exit(0)
+
+          latest_md = max(md_files, key=os.path.getmtime)
+          print(f'正在检查文章: {latest_md}')
+
+          with open(latest_md, 'r', encoding='utf-8') as f:
+              content = f.read()
+
+          # 1. 检查当前 markdown 文件里已经写了多少张图片
+          # 匹配 images: 下面以 - 开头的行
+          existing_images_match = re.findall(r'-\s*([^\r\n]+)', content.split('images:')[1].split('---')[0] if 'images:' in content and '---' in content else '')
+          existing_count = len(existing_images_match)
+
+          # 如果本来就只有一张，或者压根没写 images，我们需要进一步去文件夹看看实际有几张
+          md_name = os.path.splitext(os.path.basename(latest_md))[0]
+          
+          date_match = re.search(r'date:\s*[\'\"](\d{4})-(\d{2})-(\d{2})', content)
+          if date_match:
+              year, month, day = date_match.groups()
+          else:
+              year, month, day = '2026', '08', '21'
+
+          # 寻找对应的图片文件夹
+          possible_img_dirs = glob.glob(f'**/moments/**/{md_name}/{year}/{month}/{day}', recursive=True)
+          if not possible_img_dirs:
+              possible_img_dirs = glob.glob(f'**/moments/**/{md_name}/**/*', recursive=True)
+
+          actual_images = []
+          if possible_img_dirs:
+              target_img_dir = possible_img_dirs[0]
+              if not os.path.isdir(target_img_dir):
+                  target_img_dir = os.path.dirname(target_img_dir)
+              
+              images = sorted(glob.glob(os.path.join(target_img_dir, '*.[jJ][pP][gG]')) + glob.glob(os.path.join(target_img_dir, '*.[pP][nN][gG]')))
+              
+              for img in images:
+                  relative_path = img.replace('public', '', 1).replace('\\', '/')
+                  if not relative_path.startswith('/'):
+                      relative_path = '/' + relative_path
+                  if '/moments/' in relative_path and not relative_path.startswith('/moments/'):
+                      relative_path = '/moments' + relative_path.split('/moments')[1]
+                  actual_images.append(relative_path)
+
+          actual_count = len(actual_images)
+          print(f'Markdown 中已有的图片路径数: {existing_count}, 文件夹实际图片数: {actual_count}')
+
+          # 核心智能判断：
+          # 1. 如果文件夹里实际图片 <= 1 张，或者文件里已有的图片数量已经和文件夹实际数量一样多，说明不用补全，直接退出！
+          if actual_count <= 1 or existing_count >= actual_count:
+              print('图片数量正常或无需补全，跳过修改。')
+              exit(0)
+
+          # 2. 只有当实际图片多于已有路径时（例如传了3张，但代码里只有1张），才自动补全！
+          if actual_images:
+              images_yaml = 'images:\n' + '\n'.join([f'  - {p}' for p in actual_images])
+              new_content = re.sub(r'images:\s*(\n\s*-\s*[^\r\n]+)*', images_yaml, content)
+              
+              if new_content != content:
+                  with open(latest_md, 'w', encoding='utf-8') as f:
+                      f.write(new_content)
+                  print('成功智能补全缺失的图片路径！')
+          "
+
+          git add .
+          if git diff --cached --quiet; then
+              print("没有发生改动")
+          else
+              git commit -m "Smart auto-fill missing images for moments [skip ci]"
+              git push
+          fi
