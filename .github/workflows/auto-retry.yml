@@ -13,11 +13,14 @@ jobs:
     permissions:
       actions: write
     steps:
+      - name: Wait for 1 minute
+        run: sleep 60
+
       - name: Automatically rerun failed workflow
         env:
           GH_REPO: ${{ github.repository }}
           GH_TOKEN: ${{ github.token }}
           RUN_ID: ${{ github.event.workflow_run.id }}
         run: |
-          echo "检测到网站部署失败，正在自动重新触发..."
+          echo "等待结束，正在触发自动重试..."
           gh run rerun $RUN_ID --failed
