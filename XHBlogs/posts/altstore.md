@@ -5,7 +5,7 @@ description: 苹果官方许可的第三方应用商店
 tags:
 - Store
 - Apple
-title: AltStore欧盟商店 
+title: AltStore欧盟商店
 ---
 
 ## https://altstore.io
