@@ -1,4 +1,4 @@
-name: Auto fix frontmatter
+name: Auto Fix Frontmatter & Fill Images
 
 on:
   push:
@@ -6,10 +6,11 @@ on:
       - 'XHBlogs/moments/**/*.md'
       - 'XHBlogs/posts/**/*.md'
       - 'XHBlogs/chatters/**/*.md'
+      - 'XHBlogs/public/moments/**'
   workflow_dispatch:
 
 jobs:
-  fix-frontmatter:
+  fix-and-fill:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -26,14 +27,67 @@ jobs:
       - name: Install dependencies
         run: pip install python-frontmatter pyyaml
 
-      - name: Auto fix images and date format
+      - name: Auto fill images and fix frontmatter
         run: |
           python << 'EOF'
           import os
           from datetime import datetime, timezone, timedelta
           import glob
           import re
+          from pathlib import Path
 
+          # ==================== 第一部分：自动填充图片路径 ====================
+          moments_dir = Path("XHBlogs/moments")
+          public_dir = Path("XHBlogs/public/moments")
+          
+          if moments_dir.exists() and moments_dir.is_dir():
+              for md_file in moments_dir.glob("*.md"):
+                  try:
+                      match = re.match(r'^(\d{4})-(\d{2})-(\d{2})-(.+)\.md$', md_file.name)
+                      if not match:
+                          continue
+
+                      year, month, day, title = match.groups()
+                      img_folder = public_dir / title / year / month / day
+
+                      if not img_folder.exists() or not img_folder.is_dir():
+                          continue
+
+                      images = []
+                      for f in sorted(img_folder.iterdir(), key=lambda x: x.name):
+                          if f.suffix.lower() in ['.jpg', '.jpeg', '.png', '.webp', '.gif']:
+                              rel_path = f"/moments/{title}/{year}/{month}/{day}/{f.name}"
+                              images.append(rel_path)
+
+                      if not images:
+                          continue
+
+                      content = md_file.read_text(encoding='utf-8')
+                      images_yaml = "images:\n" + "\n".join(f"- {img}" for img in images)
+
+                      if re.search(r'^images:\s*', content, re.MULTILINE):
+                          new_content = re.sub(
+                              r'^images:.*?(?=\n\w|\n---|\Z)',
+                              images_yaml,
+                              content,
+                              flags=re.MULTILINE | re.DOTALL
+                          )
+                      else:
+                          new_content = re.sub(
+                              r'(date:.*\n)',
+                              r'\1' + images_yaml + '\n',
+                              content,
+                              count=1
+                          )
+
+                      if new_content != content:
+                          md_file.write_text(new_content, encoding='utf-8')
+                          print(f"✅ Filled {len(images)} images into: {md_file.name}")
+
+                  except Exception as e:
+                      print(f"⚠️ Error filling images for {md_file}: {e}")
+
+          # ==================== 第二部分：修复格式、日期与空行 ====================
           patterns = [
               'XHBlogs/moments/**/*.md',
               'XHBlogs/posts/**/*.md',
@@ -64,7 +118,7 @@ jobs:
                   original = content
                   file_changed = False
 
-                  # 1. 修复 images 格式（- 前面没有空格）
+                  # 1. 修复 images 格式（确保格式正确）
                   content = re.sub(
                       r'^images:\s*(?!$)(?!-\s)(.+)$',
                       r'images:\n- \1',
@@ -95,21 +149,21 @@ jobs:
                           flags=re.MULTILINE
                       )
                       if new_content != content:
-                          content = new_content
-                          file_changed = True
-                          print(f"⏰ Fixed bad date: {path}")
+                        content = new_content
+                        file_changed = True
+                        print(f"⏰ Fixed bad date: {path}")
                       else:
-                          content = re.sub(
-                              r'^(---\s*\n)',
-                              f"\\1{correct_line}\n",
-                              content,
-                              count=1,
-                              flags=re.MULTILINE
-                          )
-                          file_changed = True
-                          print(f"⏰ Added date: {path}")
+                        content = re.sub(
+                            r'^(---\s*\n)',
+                            f"\\1{correct_line}\n",
+                            content,
+                            count=1,
+                            flags=re.MULTILINE
+                        )
+                        file_changed = True
+                        print(f"⏰ Added date: {path}")
 
-                  # 3. 只处理结尾的 ---（最后一个），没有空行才补
+                  # 3. 处理结尾的 --- 空行
                   if content.count('---') >= 2:
                       parts = content.split('---', 2)
                       front = parts[0] + '---' + parts[1] + '---'
@@ -137,7 +191,7 @@ jobs:
           if not changed:
               print("✅ No files need fixing.")
           else:
-              print("✅ All fixes applied.")
+              print("✅ All fixes and image fills applied.")
           EOF
 
       - name: Commit changes
@@ -148,6 +202,6 @@ jobs:
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "chore: auto fix frontmatter (images & date & blank line)"
+            git commit -m "chore: auto fill images and fix frontmatter"
             git push
           fi
