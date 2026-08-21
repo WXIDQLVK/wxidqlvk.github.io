@@ -1,0 +1,23 @@
+name: Auto Retry on Failure
+
+on:
+  workflow_run:
+    workflows: ["Auto fix frontmatter"] # 这里填你那个经常因为冲突报错的工作流的名字
+    types:
+      - completed
+
+jobs:
+  retry:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'failure' && github.event.workflow_run.run_attempt == 1 }}
+    permissions:
+      actions: write
+    steps:
+      - name: Automatically rerun failed workflow
+        env:
+          GH_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+        run: |
+          echo "检测到工作流失败，正在自动重新触发..."
+          gh run rerun $RUN_ID --failed
