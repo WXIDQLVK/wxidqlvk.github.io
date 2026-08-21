@@ -21,7 +21,6 @@ import PageTransition from '../../../components/PageTransition';
 import { siteConfig } from '../../../siteConfig';
 import BackButton from '../../../components/BackButton';
 import Comments from '../../../components/Comments';
-// 已移除 ClientSocials 和 SidebarLyric 的杂谈详情页导入
 
 export async function generateStaticParams() {
   const chattersDirectory = path.join(process.cwd(), 'chatters');
@@ -30,48 +29,40 @@ export async function generateStaticParams() {
   return filenames
     .filter((name) => name.endsWith('.md'))
     .map((name) => ({
-      slug: name.replace(/\.md$/, ''),
+      // 🌟 核心修复：解码文件名，确保中文路径在静态生成时也能被正确识别
+      slug: decodeURIComponent(name.replace(/\.md$/, '')),
     }));
 }
 
 async function getChatterData(slug: string) {
-  const fullPath = path.join(process.cwd(), 'chatters', `${slug}.md`);
+  // 🌟 核心修复：对传入的 slug 进行解码，防止中文路径找不到文件
+  const decodedSlug = decodeURIComponent(slug);
+  const fullPath = path.join(process.cwd(), 'chatters', `${decodedSlug}.md`);
   const fileContents = fs.readFileSync(fullPath, 'utf8');
 
   let { data, content } = matter(fileContents);
 
   // ==========================================
-  // 🌟 前台渲染清洗区：终极防吞换行 + 安全保护补丁！（从 Post 完美移植）
+  // 🌟 前台渲染清洗区：终极防吞换行 + 安全保护补丁！
   // ==========================================
-
-  // 1. 基础物理清洗：统一换行符，干掉幽灵占位符和纯空格废行
   content = content.replace(/\r\n/g, '\n');
   content = content.replace(/[\u200B-\u200D\uFEFF]/g, '');
   content = content.replace(/^[ \t]+$/gm, '');
-
-  // 2. 强行修复数字列表缺少空格导致无法渲染为列表的 Bug (1.百度 -> 1. 百度)
   content = content.replace(/^(\s*\d+)\.([^ \n])/gm, '$1. $2');
 
-  // 3. 🌟 空间隔离防吞换行阵法（绝对不伤代码块！）
   const blocks = content.split(/(```[\s\S]*?```|~~~[\s\S]*?~~~)/g);
   content = blocks.map((block, index) => {
-    // 奇数索引是代码块
     if (index % 2 === 1) {
-      // 🌟 安全注入：如果代码块没写明语言，只在开头安全补上 cpp，绝不破坏结尾！
       if (/^```[ \t]*(\n|$)/.test(block)) {
          return block.replace(/^```[ \t]*/, '```cpp');
       }
       return block;
     }
-
-    // 偶数索引是正文。把 3 个以上的连续 \n 替换为真实的 <br> 标签。
     return block.replace(/\n{3,}/g, (match) => {
       const brCount = match.length - 2;
       return '\n\n' + '<br>'.repeat(brCount) + '\n\n';
     });
   }).join('');
-
-  // ==========================================
 
   const processedContent = await unified()
     .use(remarkParse)
@@ -89,7 +80,7 @@ async function getChatterData(slug: string) {
     .process(content);
 
   return {
-    slug,
+    slug: decodedSlug,
     contentHtml: processedContent.toString(),
     title: data.title || '碎片记录',
     date: data.date,
@@ -106,11 +97,11 @@ function getRecentChatters(currentSlug: string) {
   if (!fileNames) return [];
 
   return fileNames.map(f => {
-    const s = f.replace(/\.md$/, '');
+    const s = decodeURIComponent(f.replace(/\.md$/, ''));
     const c = fs.readFileSync(path.join(chattersDirectory, f), 'utf8');
     const { data } = matter(c);
     return { slug: s, title: data.title || '碎片记录', date: data.date || '1970-01-01' };
-  }).filter(p => p.slug !== currentSlug)
+  }).filter(p => p.slug !== decodeURIComponent(currentSlug))
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 3);
 }
@@ -196,9 +187,6 @@ export default async function ChatterDetail({ params }: { params: Promise<{ slug
                   .prose ol { list-style-type: decimal !important; padding-left: 1.5rem !important; font-size: 0.95rem !important; }
                   .prose li { display: list-item !important; margin-bottom: 0.5rem !important; }
                   
-                  .prose ul ul, .prose ol ul { list-style-type: circle !important; margin-top: 0.25rem !important; margin-bottom: 0.25rem !important; }
-                  .prose ol ol, .prose ul ol { list-style-type: lower-alpha !important; margin-top: 0.25rem !important; margin-bottom: 0.25rem !important; }
-                  
                   .prose del { text-decoration-color: inherit !important; opacity: 0.6; }
 
                   .prose blockquote {
@@ -210,15 +198,8 @@ export default async function ChatterDetail({ params }: { params: Promise<{ slug
                     font-style: italic !important;
                     color: #64748b !important;
                   }
-                  .prose blockquote p {
-                    margin: 0 !important; 
-                    color: inherit !important;
-                  }
-                  .dark .prose blockquote {
-                    border-left-color: #818cf8 !important;
-                    background-color: rgba(129, 140, 248, 0.1) !important;
-                    color: #94a3b8 !important;
-                  }
+                  .prose blockquote p { margin: 0 !important; color: inherit !important; }
+                  .dark .prose blockquote { border-left-color: #818cf8 !important; background-color: rgba(129, 140, 248, 0.1) !important; color: #94a3b8 !important; }
                   
                   .prose pre {
                     background-color: #282c34 !important; color: #abb2bf !important;
@@ -226,46 +207,11 @@ export default async function ChatterDetail({ params }: { params: Promise<{ slug
                     overflow-x: auto !important; box-shadow: inset 0 0 10px rgba(0,0,0,0.3) !important;
                     margin-top: 1rem !important; margin-bottom: 1rem !important;
                   }
-                  
-                  .prose pre code, .prose p code, .prose li code { 
-                    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, ui-monospace, monospace !important; 
-                    font-variant-ligatures: contextual !important; 
-                  }
-                  .prose pre code { 
-                    background-color: transparent !important; 
-                    padding: 0 !important; 
-                    color: inherit !important; 
-                    font-size: 0.85em !important; 
-                  }
-                  
+                  .prose pre code { background-color: transparent !important; padding: 0 !important; color: inherit !important; font-size: 0.85em !important; }
                   .prose code::before, .prose code::after { content: none !important; }
                   .prose p code, .prose li code { background-color: rgba(99, 102, 241, 0.1) !important; color: #6366f1 !important; padding: 0.1rem 0.3rem !important; border-radius: 0.25rem !important; font-weight: 600 !important; font-size: 0.85em !important; }
                   .dark .prose p code, .dark .prose li code { background-color: rgba(99, 102, 241, 0.2) !important; color: #818cf8 !important; }
                   .prose img { display: block !important; margin: 1.5rem auto !important; border-radius: 1rem !important; box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important; max-width: 100% !important; height: auto !important; }
-
-                  .prose pre code .hljs-comment, .prose pre code .hljs-quote { color: #5c6370 !important; font-style: italic !important; }
-                  .prose pre code .hljs-doctag, .prose pre code .hljs-keyword, .prose pre code .hljs-formula { color: #c678dd !important; }
-                  .prose pre code .hljs-keyword.type_, .prose pre code .hljs-type { color: #c678dd !important; } 
-                  .prose pre code .hljs-section, .prose pre code .hljs-name, .prose pre code .hljs-selector-tag, .prose pre code .hljs-deletion, .prose pre code .hljs-subst { color: #e06c75 !important; }
-                  .prose pre code .hljs-literal { color: #56b6c2 !important; }
-                  .prose pre code .hljs-string, .prose pre code .hljs-regexp, .prose pre code .hljs-addition, .prose pre code .hljs-attribute, .prose pre code .hljs-meta-string { color: #98c379 !important; }
-                  .prose pre code .hljs-built_in, .prose pre code .hljs-class .hljs-title, .prose pre code .hljs-title.class_ { color: #e6c07b !important; } 
-                  .prose pre code .hljs-attr, .prose pre code .hljs-variable, .prose pre code .hljs-template-variable, .prose pre code .hljs-selector-class, .prose pre code .hljs-selector-attr, .prose pre code .hljs-selector-pseudo, .prose pre code .hljs-number { color: #d19a66 !important; }
-                  .prose pre code .hljs-symbol, .prose pre code .hljs-bullet, .prose pre code .hljs-link, .prose pre code .hljs-meta, .prose pre code .hljs-selector-id, .prose pre code .hljs-title, .prose pre code .hljs-title.function_ { color: #61aeee !important; } 
-
-                  @media (min-width: 768px) {
-                    .prose h1 { font-size: 3rem !important; font-weight: 950 !important; margin-bottom: 2rem !important; margin-top: 3rem !important; line-height: 1.1 !important; }
-                    .prose h2 { font-size: 2.2rem !important; margin-bottom: 1.5rem !important; margin-top: 2rem !important; }
-                    .prose h3 { font-size: 1.5rem !important; margin-bottom: 1rem !important; }
-                    .prose p { font-size: 1.15rem !important; line-height: 1.85 !important; }
-                    
-                    .prose ul, .prose ol { padding-left: 2rem !important; font-size: 1.1rem !important; }
-                    
-                    .prose pre { padding: 1.25rem !important; margin-top: 1.5rem !important; margin-bottom: 1.5rem !important; }
-                    .prose pre code { font-size: 0.9em !important; }
-                    .prose p code, .prose li code { padding: 0.2rem 0.4rem !important; font-size: 0.9em !important; border-radius: 0.375rem !important;}
-                    .prose img { margin: 2rem auto !important; border-radius: 2rem !important; box-shadow: 0 20px 50px rgba(0,0,0,0.15) !important; }
-                  }
                 `}</style>
 
                 <div
@@ -277,13 +223,10 @@ export default async function ChatterDetail({ params }: { params: Promise<{ slug
               <div className="mt-10 md:mt-12">
                 <Comments />
               </div>
-
             </div>
           </article>
 
           <aside className="w-full lg:w-[320px] flex flex-col gap-6 flex-shrink-0">
-            {/* 个人简介和音乐播放组件已被精准移除 */}
-
             <div className="bg-white/60 dark:bg-slate-800/50 backdrop-blur-xl rounded-3xl p-6 border border-white/40 dark:border-white/10 shadow-xl">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-lg font-black text-slate-800 dark:text-white tracking-wider">{yearStr}年{monthNum}月</h3>
