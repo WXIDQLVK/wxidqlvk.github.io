@@ -3,7 +3,7 @@
 export const siteConfig = {
   // 1. 网站标题与博主信息
   title: "个人博客",
-  faviconUrl: "/images/icon.webp",
+  faviconUrl: "/images/favicon.webp",
   authorName: "玩家名六个字",
   bio: "热爱苹果生态与前沿的应用开发的普通人，致力打造兼具性能与优秀体验的软件工具",
 
