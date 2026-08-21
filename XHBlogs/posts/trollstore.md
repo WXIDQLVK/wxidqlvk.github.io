@@ -7,7 +7,7 @@ tags:
 - 侧载
 - Store
 - iOS
-title: TrollStore巨魔商店 
+title: TrollStore巨魔商店
 ---
 
 ## https://trollstore.org
