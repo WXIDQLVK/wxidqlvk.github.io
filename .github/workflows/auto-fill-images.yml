@@ -20,65 +20,65 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.io"
 
-      - name: Sync images by matching title
+      - name: Precise sync images
         run: |
           python3 -c "
           import os, glob, re
 
-          # 1. 找到最近修改的 md 文件
+          # 1. 找到所有 moments 下的 .md 文件
           md_files = glob.glob('moments/**/*.md', recursive=True) + glob.glob('public/moments/**/*.md', recursive=True)
           if not md_files:
+              print('未找到 md 文件')
               exit(0)
 
           latest_md = max(md_files, key=os.path.getmtime)
-          print(f'处理文章: {latest_md}')
+          print(f'正在处理文件: {latest_md}')
 
           with open(latest_md, 'r', encoding='utf-8') as f:
               content = f.read()
 
-          # 2. 直接从内容中提取 title: 后面的名字
-          title_match = re.search(r'^title:\s*(.+)$', content, re.MULTILINE)
-          if not title_match:
-              print('未找到文章标题')
-              exit(0)
+          # 2. 从文件名 \"2026-08-21-玉面鬼竖.md\" 中精准提取出标题 \"玉面鬼竖\" 和日期 \"2026/08/21\"
+          basename = os.path.basename(latest_md)
+          # 匹配 形如 2026-08-21-标题.md 的格式
+          name_match = re.match(r'(\d{4})-(\d{2})-(\d{2})-(.+)\.md', basename)
+          
+          if name_match:
+              year, month, day, title = name_match.groups()
+          else:
+              # 兜底：如果文件名没有日期前缀，就去内容里找 title 和 date
+              year, month, day = '2026', '08', '21'
+              title_m = re.search(r'^title:\s*(.+)$', content, re.MULTILINE)
+              title = title_m.group(1).strip().strip('\"\'') if title_m else 'unknown'
 
-          blog_title = title_match.group(1).strip().strip('\"\'')
-          print(f'提取到的文章标题（也是文件夹名）: {blog_title}')
+          print(f'解析结果 -> 标题: {title}, 日期: {year}/{month}/{day}')
 
-          # 3. 在整仓中寻找名字跟 blog_title 一模一样的图片文件夹
-          target_dirs = []
-          for root, dirs, files in os.walk('.'):
-              if blog_title in dirs:
-                  target_dirs.append(os.path.join(root, blog_title))
+          # 3. 精准拼出图片文件夹的路径：玉面鬼竖/2026/08/21
+          # 可能是在 moments/玉面鬼竖/... 或者是 public/moments/玉面鬼竖/...
+          target_dirs = glob.glob(f'**/moments/**/{title}/{year}/{month}/{day}', recursive=True)
+          if not target_dirs:
+              # 换一种宽松点的匹配
+              target_dirs = glob.glob(f'**/{title}/{year}/{month}/{day}', recursive=True)
 
           if not target_dirs:
-              print('未找到同名图片文件夹')
+              print(f'没有找到对应的图片文件夹: {title}/{year}/{month}/{day}')
               exit(0)
 
-          # 取找到的第一个同名文件夹
           img_folder = target_dirs[0]
-          print(f'定位到同名图片文件夹: {img_folder}')
+          print(f'成功锁定图片文件夹: {img_folder}')
 
-          # 4. 获取该文件夹下（或其子目录里）的所有图片
-          all_imgs = []
-          for r, d, fs in os.walk(img_folder):
-              for file in fs:
-                  if file.lower().endswith(('.jpg', '.jpeg', '.png', '.JPG', '.PNG')):
-                      all_imgs.append(os.path.join(r, file))
+          # 4. 获取该文件夹下的所有图片
+          images = sorted(glob.glob(os.path.join(img_folder, '*.jpg')) + glob.glob(os.path.join(img_folder, '*.png')) + glob.glob(os.path.join(img_folder, '*.JPG')) + glob.glob(os.path.join(img_folder, '*.PNG')))
 
-          # 按文件名排序 (1.jpg, 2.jpg, 3.jpg...)
-          all_imgs = sorted(all_imgs)
-
-          if all_imgs:
+          if images:
               img_paths = []
-              for img in all_imgs:
+              for img in images:
                   rel = img.replace('public', '', 1).replace('\\', '/')
                   if not rel.startswith('/'): rel = '/' + rel
                   if '/moments/' in rel:
                       rel = '/moments' + rel.split('/moments')[1]
                   img_paths.append(rel)
 
-              print(f'生成的所有图片路径: {img_paths}')
+              print(f'获取到的图片路径列表: {img_paths}')
 
               # 5. 替换 Markdown 里的 images 列表
               images_yaml = 'images:\n' + '\n'.join([f'  - {p}' for p in img_paths])
@@ -87,13 +87,13 @@ jobs:
               if new_content != content:
                   with open(latest_md, 'w', encoding='utf-8') as f:
                       f.write(new_content)
-                  print('成功按标题同名字段补全所有图片路径！')
+                  print('成功写入全部图片路径！')
           "
 
           git add .
           if git diff --cached --quiet; then
-              echo "无改动"
+              echo "没有变动"
           else
-              git commit -m "Auto fill images by title match [skip ci]"
+              git commit -m "Precise auto fill images [skip ci]"
               git push
           fi
