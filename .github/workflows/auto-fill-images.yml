@@ -20,85 +20,80 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.io"
 
-      - name: Absolute sync images from folder
+      - name: Sync images by matching title
         run: |
           python3 -c "
           import os, glob, re
 
-          # 1. 寻找所有的 md 文件
+          # 1. 找到最近修改的 md 文件
           md_files = glob.glob('moments/**/*.md', recursive=True) + glob.glob('public/moments/**/*.md', recursive=True)
           if not md_files:
-              print('未找到任何 markdown 文件')
               exit(0)
 
-          # 拿到最新修改的一篇
           latest_md = max(md_files, key=os.path.getmtime)
-          print(f'正在处理的文章文件: {latest_md}')
+          print(f'处理文章: {latest_md}')
 
           with open(latest_md, 'r', encoding='utf-8') as f:
               content = f.read()
 
-          # 2. 模糊匹配：寻找仓库里任何包含图片且有 jpg/png 的目录
-          # 直接在整仓搜索所有图片文件，找出跟当前 md 标题或者日期最接近的文件夹
-          all_images = glob.glob('**/moments/**/*.jpg', recursive=True) + glob.glob('**/moments/**/*.png', recursive=True) + glob.glob('**/moments/**/*.JPG', recursive=True)
-          
-          if not all_images:
-              print('仓库中未检测到任何 moments 图片')
+          # 2. 直接从内容中提取 title: 后面的名字
+          title_match = re.search(r'^title:\s*(.+)$', content, re.MULTILINE)
+          if not title_match:
+              print('未找到文章标题')
               exit(0)
 
-          # 筛选出跟这篇 md 同一个日期或目录底下的图片
-          # 获取当前 md 文件所在的文件夹路径特征
-          md_dir_parts = os.path.normpath(latest_md).split(os.sep)
-          
-          # 寻找离当前 md 文件最近的图片文件夹
-          target_images = []
-          # 简单粗暴：直接找文件名含有当前 md 标题或者属于同一层级的图片
-          md_basename = os.path.splitext(os.path.basename(latest_md))[0]
-          
-          matched_dir = None
-          for img in all_images:
-              if md_basename in img or '2026' in img: # 确保属于这篇动态
-                  dir_name = os.path.dirname(img)
-                  if matched_dir is None:
-                      matched_dir = dir_name
+          blog_title = title_match.group(1).strip().strip('\"\'')
+          print(f'提取到的文章标题（也是文件夹名）: {blog_title}')
 
-          # 如果上面没挑出来，直接拿最新的一组图片目录
-          if not matched_dir and all_images:
-              matched_dir = os.path.dirname(all_images[-1])
+          # 3. 在整仓中寻找名字跟 blog_title 一模一样的图片文件夹
+          target_dirs = []
+          for root, dirs, files in os.walk('.'):
+              if blog_title in dirs:
+                  target_dirs.append(os.path.join(root, blog_title))
 
-          print(f'命中的图片文件夹: {matched_dir}')
+          if not target_dirs:
+              print('未找到同名图片文件夹')
+              exit(0)
 
-          if matched_dir:
-              # 获取该目录下所有图片并排序
-              images = sorted(glob.glob(os.path.join(matched_dir, '*.[jJ][pP][gG]')) + glob.glob(os.path.join(matched_dir, '*.[pP][nN][gG]')) + glob.glob(os.path.join(matched_dir, '*.JPG')))
-              
-              if images:
-                  img_paths = []
-                  for img in images:
-                      rel = img.replace('public', '', 1).replace('\\', '/')
-                      if not rel.startswith('/'): rel = '/' + rel
-                      if '/moments/' in rel:
-                          rel = '/moments' + rel.split('/moments')[1]
-                      img_paths.append(rel)
+          # 取找到的第一个同名文件夹
+          img_folder = target_dirs[0]
+          print(f'定位到同名图片文件夹: {img_folder}')
 
-                  print(f'解析出的图片网页路径: {img_paths}')
+          # 4. 获取该文件夹下（或其子目录里）的所有图片
+          all_imgs = []
+          for r, d, fs in os.walk(img_folder):
+              for file in fs:
+                  if file.lower().endswith(('.jpg', '.jpeg', '.png', '.JPG', '.PNG')):
+                      all_imgs.append(os.path.join(r, file))
 
-                  # 构造 YAML
-                  images_yaml = 'images:\n' + '\n'.join([f'  - {p}' for p in img_paths])
-                  new_content = re.sub(r'images:\s*(\n\s*-\s*[^\r\n]+)*', images_yaml, content)
+          # 按文件名排序 (1.jpg, 2.jpg, 3.jpg...)
+          all_imgs = sorted(all_imgs)
 
-                  if new_content != content:
-                      with open(latest_md, 'w', encoding='utf-8') as f:
-                          f.write(new_content)
-                      print('成功将所有图片路径刷入 Markdown！')
-                  else:
-                      print('Markdown 中的图片路径已经是最新，无需修改。')
+          if all_imgs:
+              img_paths = []
+              for img in all_imgs:
+                  rel = img.replace('public', '', 1).replace('\\', '/')
+                  if not rel.startswith('/'): rel = '/' + rel
+                  if '/moments/' in rel:
+                      rel = '/moments' + rel.split('/moments')[1]
+                  img_paths.append(rel)
+
+              print(f'生成的所有图片路径: {img_paths}')
+
+              # 5. 替换 Markdown 里的 images 列表
+              images_yaml = 'images:\n' + '\n'.join([f'  - {p}' for p in img_paths])
+              new_content = re.sub(r'images:\s*(\n\s*-\s*[^\r\n]+)*', images_yaml, content)
+
+              if new_content != content:
+                  with open(latest_md, 'w', encoding='utf-8') as f:
+                      f.write(new_content)
+                  print('成功按标题同名字段补全所有图片路径！')
           "
 
           git add .
           if git diff --cached --quiet; then
-              echo "没有产生 Git 变动"
+              echo "无改动"
           else
-              git commit -m "Auto sync all moment images [skip ci]"
+              git commit -m "Auto fill images by title match [skip ci]"
               git push
           fi
