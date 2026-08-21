@@ -32,7 +32,8 @@ export async function generateStaticParams() {
   return filenames
     .filter((name) => name.endsWith('.md'))
     .map((name) => ({
-      slug: name.replace(/\.md$/, ''),
+      // 🌟 核心修复：解码文件名，确保中文路径在静态生成时也能被正确识别
+      slug: decodeURIComponent(name.replace(/\.md$/, '')),
     }));
 }
 
@@ -51,7 +52,9 @@ function extractToc(content: string) {
 }
 
 async function getPostData(slug: string) {
-  const fullPath = path.join(process.cwd(), 'posts', `${slug}.md`);
+  // 🌟 核心修复：对传入的 slug 进行解码，防止中文路径找不到文件
+  const decodedSlug = decodeURIComponent(slug);
+  const fullPath = path.join(process.cwd(), 'posts', `${decodedSlug}.md`);
   const fileContents = fs.readFileSync(fullPath, 'utf8');
   let { data, content } = matter(fileContents);
 
@@ -72,7 +75,7 @@ async function getPostData(slug: string) {
     // 奇数索引是代码块，原样返回，绝对不碰！
     if (index % 2 === 1) return block;
 
-    // 偶数索引是正文。把 3 个以上的连续 \n 替换为真实的 <br/> 标签。
+    // 偶数索引是正文. 把 3 个以上的连续 \n 替换为真实的 <br/> 标签.
     return block.replace(/\n{3,}/g, (match) => {
       const brCount = match.length - 2;
       return '\n\n' + '<br/>'.repeat(brCount) + '\n\n';
@@ -97,7 +100,7 @@ async function getPostData(slug: string) {
     .process(content);
 
   return {
-    slug,
+    slug: decodedSlug,
     contentHtml: processedContent.toString(),
     toc: extractToc(content),
     title: data.title,
@@ -113,11 +116,11 @@ function getRecentPosts(currentSlug: string) {
   try { fileNames = fs.readdirSync(postsDirectory).filter(f => f.endsWith('.md')); } catch(e) {}
   if (!fileNames) return [];
   return fileNames.map(f => {
-    const s = f.replace(/\.md$/, '');
+    const s = decodeURIComponent(f.replace(/\.md$/, ''));
     const c = fs.readFileSync(path.join(postsDirectory, f), 'utf8');
     const { data } = matter(c);
     return { slug: s, title: data.title || '无标题', date: data.date };
-  }).filter(p => p.slug !== currentSlug).slice(0, 3);
+  }).filter(p => p.slug !== decodeURIComponent(currentSlug)).slice(0, 3);
 }
 
 export default async function Post({ params }: { params: Promise<{ slug: string }> }) {
