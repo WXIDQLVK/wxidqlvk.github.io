@@ -16,41 +16,26 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: `${{ secrets.GITHUB_TOKEN }}`
 
-      - name: Configure Git identity
+      - name: Configure Git
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.io"
 
-      - name: Modify latest markdown file and push
+      - name: Add space to title and push
         run: |
-          # 找出最近修改的那篇 Markdown 文件
-          LATEST_FILE=$(ls -t $(find . -name "*.md" -not -path "*/.*") 2>/dev/null | head -n 1)
-          
-          echo "正在处理文件: $LATEST_FILE"
-          
-          if [ -f "$LATEST_FILE" ]; then
-            # 使用 Python 安全地在 title 标题后面加一个空格
-            python3 -c "
-            path = '$LATEST_FILE'
-            with open(path, 'r', encoding='utf-8') as f:
-                content = f.read()
-            
-            import re
-            new_content, count = re.subn(r'(^title:\s*[^\r\n]+)', r'\1 ', content, flags=re.MULTILINE)
-            
-            if count > 0:
-                with open(path, 'w', encoding='utf-8') as f:
-                    f.write(new_content)
-                print('已成功在标题后加空格')
-            else:
-                print('未找到匹配的 title 行')
-            "
-            
-            git add "$LATEST_FILE"
-            git commit -m "Auto-fix: add space to title for successful rebuild"
-            git push
-          else
-            echo "未找到 Markdown 文件"
+          # 找出最后修改的一个 md 文件
+          FILE=$(git status --porcelain | awk '{print $2}' | grep '\.md$' | tail -n 1)
+          if [ -z "$FILE" ]; then
+            FILE=$(find . -name "*.md" | sort -r | head -n 1)
           fi
+          
+          echo "修改文件: $FILE"
+          
+          # 直接在 title: 后面加一个空格
+          sed -i 's/^title: \(.*\)/title: \1 /' "$FILE"
+          
+          git add "$FILE"
+          git commit -m "Auto-fix: add space"
+          git push
