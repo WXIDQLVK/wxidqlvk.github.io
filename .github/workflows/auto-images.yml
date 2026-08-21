@@ -1,0 +1,116 @@
+name: Auto fill images path
+
+on:
+  push:
+    paths:
+      - 'XHBlogs/moments/**/*.md'
+  workflow_dispatch:
+
+jobs:
+  fill-images:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Auto fill images
+        run: |
+          python << 'EOF'
+          import os
+          import re
+          import glob
+          from pathlib import Path
+
+          moments_dir = Path("XHBlogs/moments")
+          public_dir = Path("XHBlogs/public/moments")
+
+          changed = False
+
+          for md_file in moments_dir.glob("*.md"):
+              try:
+                  # 解析文件名：2026-08-21-镖人.md
+                  match = re.match(r'^(\d{4})-(\d{2})-(\d{2})-(.+)\.md$', md_file.name)
+                  if not match:
+                      print(f"⚠️ Skip (filename not match): {md_file}")
+                      continue
+
+                  year, month, day, title = match.groups()
+
+                  # 对应图片文件夹：XHBlogs/public/moments/标题/年/月/日
+                  img_folder = public_dir / title / year / month / day
+
+                  if not img_folder.exists() or not img_folder.is_dir():
+                      print(f"⚠️ Image folder not found: {img_folder}")
+                      continue
+
+                  # 获取所有图片，按数字排序（1.jpg, 2.jpg, 3.jpg...）
+                  images = []
+                  for f in sorted(img_folder.iterdir(), key=lambda x: x.name):
+                      if f.suffix.lower() in ['.jpg', '.jpeg', '.png', '.webp', '.gif']:
+                          # 生成路径：/moments/标题/年/月/日/1.jpg
+                          rel_path = f"/moments/{title}/{year}/{month}/{day}/{f.name}"
+                          images.append(rel_path)
+
+                  if not images:
+                      print(f"⚠️ No images found in: {img_folder}")
+                      continue
+
+                  # 读取 markdown 内容
+                  content = md_file.read_text(encoding='utf-8')
+
+                  # 生成 images 字段
+                  images_yaml = "images:\n" + "\n".join(f"- {img}" for img in images)
+
+                  # 替换已有的 images 字段，或者插入
+                  if re.search(r'^images:\s*', content, re.MULTILINE):
+                      # 已有 images，整段替换
+                      new_content = re.sub(
+                          r'^images:.*?(?=\n\w|\n---|\Z)',
+                          images_yaml,
+                          content,
+                          flags=re.MULTILINE | re.DOTALL
+                      )
+                  else:
+                      # 没有 images，插入到 date 后面（或 frontmatter 靠前位置）
+                      new_content = re.sub(
+                          r'(date:.*\n)',
+                          r'\1' + images_yaml + '\n',
+                          content,
+                          count=1
+                      )
+
+                  if new_content != content:
+                      md_file.write_text(new_content, encoding='utf-8')
+                      changed = True
+                      print(f"✅ Filled {len(images)} images into: {md_file.name}")
+                  else:
+                      print(f"ℹ️ Already up to date: {md_file.name}")
+
+              except Exception as e:
+                  print(f"⚠️ Error processing {md_file}: {e}")
+
+          if not changed:
+              print("✅ No files need updating.")
+          else:
+              print("✅ Images filled successfully.")
+          EOF
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: auto fill images paths"
+            git push
+          fi
