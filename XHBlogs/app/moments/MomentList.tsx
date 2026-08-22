@@ -172,18 +172,28 @@ export default function MomentList({ moments, authorName, avatarUrl }: any) {
 
       <LayoutGroup>
         {processedMoments.length > 0 ? (
-          <div className="flex flex-col md:flex-row gap-5 md:gap-8 pb-32 w-full items-start">
-            <div className="flex-1 flex flex-col gap-5 md:gap-8 w-full min-w-0">
+          <>
+            {/* 手机端：严格按时间顺序单列，最新在最上面 */}
+            <div className="flex flex-col gap-5 pb-32 w-full md:hidden">
               <AnimatePresence mode='popLayout'>
-                {processedMoments.filter((_, i) => i % 2 === 0).map(moment => renderMomentCard(moment))}
+                {processedMoments.map(moment => renderMomentCard(moment))}
               </AnimatePresence>
             </div>
-            <div className="flex-1 flex flex-col gap-5 md:gap-8 w-full min-w-0">
-              <AnimatePresence mode='popLayout'>
-                {processedMoments.filter((_, i) => i % 2 === 1).map(moment => renderMomentCard(moment))}
-              </AnimatePresence>
+
+            {/* 桌面端：保持原来的左右两列布局不变 */}
+            <div className="hidden md:flex flex-row gap-8 pb-32 w-full items-start">
+              <div className="flex-1 flex flex-col gap-8 w-full min-w-0">
+                <AnimatePresence mode='popLayout'>
+                  {processedMoments.filter((_, i) => i % 2 === 0).map(moment => renderMomentCard(moment))}
+                </AnimatePresence>
+              </div>
+              <div className="flex-1 flex flex-col gap-8 w-full min-w-0">
+                <AnimatePresence mode='popLayout'>
+                  {processedMoments.filter((_, i) => i % 2 === 1).map(moment => renderMomentCard(moment))}
+                </AnimatePresence>
+              </div>
             </div>
-          </div>
+          </>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center py-12 md:py-24 min-h-[300px] md:min-h-[450px]">
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center text-center px-6 md:px-10 py-12 md:py-20 bg-white/40 dark:bg-slate-800/30 backdrop-blur-3xl rounded-[32px] md:rounded-[50px] border border-white/30 dark:border-white/10 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] max-w-lg w-full mx-auto">
