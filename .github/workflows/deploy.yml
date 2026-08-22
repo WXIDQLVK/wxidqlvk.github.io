@@ -1,8 +1,22 @@
 name: Deploy Next.js site to Pages
 
 on:
+  # 改代码（非文章/说说）时直接部署
   push:
     branches: ["main"]
+    paths-ignore:
+      - 'XHBlogs/moments/**'
+      - 'XHBlogs/posts/**'
+      - 'XHBlogs/chatters/**'
+      - 'XHBlogs/public/moments/**'
+
+  # 文章/说说推送后：等 auto-date 跑完再部署（避免抢跑）
+  workflow_run:
+    workflows: ["Auto Fix Frontmatter & Fill Images"]
+    types:
+      - completed
+
+  # 手动触发仍然保留
   workflow_dispatch:
 
 permissions:
@@ -16,6 +30,11 @@ concurrency:
 
 jobs:
   deploy:
+    # workflow_run 时：只有成功才部署；手动/普通 push 照常跑
+    if: >
+      github.event_name != 'workflow_run' ||
+      github.event.workflow_run.conclusion == 'success'
+
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -23,28 +42,37 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # workflow_run 触发时，拉最新 main（含 auto-date 刚推的提交）
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_branch || github.ref }}
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: "20"
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
         with:
           # 显式设为空，防止自动注入 /blog 子路径
           static_site_generator: next
+
       - name: Install dependencies
         working-directory: ./XHBlogs
         run: npm ci || npm install
+
       - name: Build site
         working-directory: ./XHBlogs
         env:
           # 强制设置环境变量为空
           NEXT_PUBLIC_BASE_PATH: ""
         run: npm run build
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./XHBlogs/out
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
