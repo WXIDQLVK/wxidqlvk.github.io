@@ -20,6 +20,18 @@ import PageTransition from '../../components/PageTransition';
 import AboutClient from '../../components/AboutClient';
 import { Suspense } from 'react';
 
+/** 把 gray-matter 解析出的 date（可能是 string 或 Date）统一成可比较的字符串 */
+function normalizeDate(d: any): string {
+  if (!d) return '1970-01-01 00:00:00';
+  // YAML 有时会被解析成 Date 对象
+  if (d instanceof Date && !isNaN(d.getTime())) {
+    const pad = (n: number) => String(n).padStart(2, '0');
+    // 用 UTC 取出 YAML 里的“字面时间”，避免再偏 8 小时
+    return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}`;
+  }
+  return String(d);
+}
+
 function getDirActivities(dirName: string, typeLabel: '文章' | '杂谈' | '说说', linkPrefix: string) {
   const dirPath = path.join(process.cwd(), dirName);
   if (!fs.existsSync(dirPath)) return [];
@@ -33,8 +45,8 @@ function getDirActivities(dirName: string, typeLabel: '文章' | '杂谈' | '说
       id: `${dirName}-${file}`,
       type: typeLabel,
       title: data.title || file.replace('.md', ''),
-      // 直接保留原始日期字符串，避免时区偏移（不再 toISOString）
-      date: data.date || '1970-01-01 00:00:00',
+      // 统一成字符串，避免 localeCompare 报错，也避免时区偏移
+      date: normalizeDate(data.date),
       url: `/${linkPrefix}/${file.replace('.md', '')}`
     };
   });
@@ -96,7 +108,7 @@ export default async function AboutPage() {
   const chatters = getDirActivities('chatters', '杂谈', 'chatter');
   const moments = getDirActivities('moments', '说说', 'moments');
 
-  // 用字符串逆序排序，最新在前，避免 Date 解析带来的时区问题
+  // 全部已是字符串，localeCompare 不会再报错
   const allActivities = [...posts, ...chatters, ...moments].sort((a, b) => {
     return b.date.localeCompare(a.date);
   });
