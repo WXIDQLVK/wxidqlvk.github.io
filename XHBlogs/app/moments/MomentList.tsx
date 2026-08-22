@@ -32,11 +32,14 @@ export default function MomentList({ moments, authorName, avatarUrl }: any) {
       );
     }
 
+    // 🌟 核心修改：使用纯字符串对比排序，彻底根治时区偏移和顺序错乱
     result.sort((a, b) => {
-      const timeA = new Date(a.date).getTime();
-      const timeB = new Date(b.date).getTime();
-      return sortOrder === 'desc' ? timeB - timeA : timeA - timeB;
+      if (b.date !== a.date) {
+        return sortOrder === 'desc' ? b.date.localeCompare(a.date) : a.date.localeCompare(b.date);
+      }
+      return sortOrder === 'desc' ? b.id.localeCompare(a.id) : a.id.localeCompare(b.id);
     });
+
     return result;
   }, [moments, searchQuery, sortOrder]);
 
@@ -118,7 +121,6 @@ export default function MomentList({ moments, authorName, avatarUrl }: any) {
         <div className="min-w-0 flex-1 pr-2">
           {moment.location && (
             <span className="inline-flex items-center gap-1 md:gap-1.5 text-[9px] md:text-[11px] font-bold px-2 md:px-3 py-1 md:py-1.5 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 max-w-full truncate border border-indigo-500/10">
-              {/* 🌟 就是这里！shrink-0 已经乖乖放进 className 里面了 */}
               <MapPin size={10} className="md:w-3 md:h-3 shrink-0" />
               <span className="truncate">{moment.location}</span>
             </span>
