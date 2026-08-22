@@ -15,6 +15,7 @@ export default function MomentsPage() {
   let allMoments: any[] = [];
 
   try {
+    // 🌟 终极防漏绝招：同时扫描两个可能的文件夹，把所有的说说都抓出来！
     const possibleDirs = [
       path.join(process.cwd(), 'posts', 'moments'),
       path.join(process.cwd(), 'moments')
@@ -38,16 +39,8 @@ export default function MomentsPage() {
       }
     });
 
-    // 去重
+    // 去重，防止你在两个文件夹放了同名文件
     allMoments = Array.from(new Map(allMoments.map(item => [item.id, item])).values());
-
-    // 🌟 加上纯字符串逆序排序，防止在客户端或后续组件中因为乱序或时区引发错乱
-    allMoments.sort((a, b) => {
-      if (b.date !== a.date) {
-        return b.date.localeCompare(a.date);
-      }
-      return b.id.localeCompare(a.id);
-    });
 
   } catch (e) {
     console.error("读取说说数据失败:", e);
