@@ -33,7 +33,8 @@ function getDirActivities(dirName: string, typeLabel: '文章' | '杂谈' | '说
       id: `${dirName}-${file}`,
       type: typeLabel,
       title: data.title || file.replace('.md', ''),
-      date: data.date ? new Date(data.date).toISOString() : '1970-01-01T00:00:00Z',
+      // 直接保留原始日期字符串，避免时区偏移（不再 toISOString）
+      date: data.date || '1970-01-01 00:00:00',
       url: `/${linkPrefix}/${file.replace('.md', '')}`
     };
   });
@@ -95,8 +96,9 @@ export default async function AboutPage() {
   const chatters = getDirActivities('chatters', '杂谈', 'chatter');
   const moments = getDirActivities('moments', '说说', 'moments');
 
+  // 用字符串逆序排序，最新在前，避免 Date 解析带来的时区问题
   const allActivities = [...posts, ...chatters, ...moments].sort((a, b) => {
-    return new Date(b.date).getTime() - new Date(a.date).getTime();
+    return b.date.localeCompare(a.date);
   });
 
   return (
