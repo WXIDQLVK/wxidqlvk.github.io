@@ -85,9 +85,9 @@ jobs:
       - name: Bark 推送 - 发布成功
         if: success()
         run: |
-          curl "${{ secrets.BARK_URL }}博客发布成功?title=🚀%20网站部署"
+          curl "${{ secrets.BARK_URL }}博客发布成功?title=网站部署&sound=shake"
 
       - name: Bark 推送 - 发布失败
         if: failure()
         run: |
-          curl "${{ secrets.BARK_URL }}博客构建或部署失败?title=❌%20网站部署"
+          curl "${{ secrets.BARK_URL }}博客构建失败?title=网站部署&sound=shake"
