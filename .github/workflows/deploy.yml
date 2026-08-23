@@ -1,4 +1,4 @@
-Name: Deploy Next.js site to Pages
+name: Deploy Next.js site to Pages
 
 on:
   # 改代码（非文章/说说）时直接部署，但不会发 Bark 通知
