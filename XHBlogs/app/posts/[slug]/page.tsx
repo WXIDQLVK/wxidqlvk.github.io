@@ -23,6 +23,17 @@ import BackButton from '../../../components/BackButton';
 import Comments from '../../../components/Comments';
 // 已移除 SidebarLyric 和 ClientSocials 的文章页导入
 
+/** 把 gray-matter 解析出的 date（可能是 string 或 Date）统一成字符串，避免 React 渲染 [object Date] */
+function normalizeDate(d: any): string {
+  if (!d) return '';
+  if (d instanceof Date && !isNaN(d.getTime())) {
+    const pad = (n: number) => String(n).padStart(2, '0');
+    // 用 UTC 取出 YAML 里的“字面时间”，避免再偏 8 小时
+    return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}`;
+  }
+  return String(d);
+}
+
 export async function generateStaticParams() {
   const postsDirectory = path.join(process.cwd(), 'posts');
   if (!fs.existsSync(postsDirectory)) return [];
@@ -104,7 +115,7 @@ async function getPostData(slug: string) {
     contentHtml: processedContent.toString(),
     toc: extractToc(content),
     title: data.title,
-    date: data.date,
+    date: normalizeDate(data.date),
     tags: data.tags && Array.isArray(data.tags) ? data.tags : [],
     cover: data.cover || siteConfig.defaultPostCover
   };
@@ -119,7 +130,7 @@ function getRecentPosts(currentSlug: string) {
     const s = decodeURIComponent(f.replace(/\.md$/, ''));
     const c = fs.readFileSync(path.join(postsDirectory, f), 'utf8');
     const { data } = matter(c);
-    return { slug: s, title: data.title || '无标题', date: data.date };
+    return { slug: s, title: data.title || '无标题', date: normalizeDate(data.date) };
   }).filter(p => p.slug !== decodeURIComponent(currentSlug)).slice(0, 3);
 }
 
