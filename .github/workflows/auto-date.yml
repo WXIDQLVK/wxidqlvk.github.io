@@ -225,7 +225,7 @@ jobs:
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            # 🌟 关键修改：加上 [skip ci]，避免重复触发导致多发通知
-            git commit -m "chore: auto fill images and fix frontmatter [skip ci]"
+            git commit -m "chore: auto fill images and fix frontmatter"
             git push
           fi
+          
