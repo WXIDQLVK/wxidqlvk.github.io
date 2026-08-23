@@ -22,6 +22,16 @@ import { siteConfig } from '../../../siteConfig';
 import BackButton from '../../../components/BackButton';
 import Comments from '../../../components/Comments';
 
+/** 把 gray-matter 解析出的 date（可能是 string 或 Date）统一成字符串，避免渲染 [object Date] 报错 */
+function normalizeDate(d: any): string {
+  if (!d) return '2026-03-24';
+  if (d instanceof Date && !isNaN(d.getTime())) {
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}`;
+  }
+  return String(d);
+}
+
 export async function generateStaticParams() {
   const chattersDirectory = path.join(process.cwd(), 'chatters');
   if (!fs.existsSync(chattersDirectory)) return [];
@@ -83,7 +93,8 @@ async function getChatterData(slug: string) {
     slug: decodedSlug,
     contentHtml: processedContent.toString(),
     title: data.title || '碎片记录',
-    date: data.date,
+    // 🌟 核心修复：使用 normalizeDate 确保 date 绝对是安全的字符串
+    date: normalizeDate(data.date),
     mood: data.mood,
     tags: data.tags && Array.isArray(data.tags) ? data.tags : [],
     cover: data.cover || siteConfig.defaultPostCover
@@ -100,7 +111,7 @@ function getRecentChatters(currentSlug: string) {
     const s = decodeURIComponent(f.replace(/\.md$/, ''));
     const c = fs.readFileSync(path.join(chattersDirectory, f), 'utf8');
     const { data } = matter(c);
-    return { slug: s, title: data.title || '碎片记录', date: data.date || '1970-01-01' };
+    return { slug: s, title: data.title || '碎片记录', date: normalizeDate(data.date) };
   }).filter(p => p.slug !== decodeURIComponent(currentSlug))
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 3);
