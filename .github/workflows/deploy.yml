@@ -38,7 +38,9 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -76,7 +78,16 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-      - name: Send Bark Notification on Success
-      if: success()
-      run: |
-        curl "https://api.day.app/Fqh67wuVGerCDJZzVRyCSE/发布成功/你的动态已经成功发表?group=blog&sound=shake"
+
+      # ==============================
+      # Bark 通知
+      # ==============================
+      - name: Bark 推送 - 发布成功
+        if: success()
+        run: |
+          curl "${{ secrets.BARK_URL }}博客发布成功?title=🚀%20网站部署"
+
+      - name: Bark 推送 - 发布失败
+        if: failure()
+        run: |
+          curl "${{ secrets.BARK_URL }}博客构建或部署失败?title=❌%20网站部署"
