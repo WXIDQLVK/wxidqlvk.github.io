@@ -77,6 +77,6 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
       - name: Send Bark Notification on Success
-        if: success()
-        run: |
-          curl "${{ secrets.BARK_URL }}/发布成功/你的动态已经成功发表?group=blog&sound=shake"
+      if: success()
+      run: |
+        curl "https://api.day.app/Fqh67wuVGerCDJZzVRyCSE/发布成功/你的动态已经成功发表?group=blog&sound=shake"
