@@ -87,9 +87,9 @@ jobs:
       - name: Bark 推送 - 发布成功
         if: success() && (github.event_name == 'workflow_run' || github.event_name == 'workflow_dispatch')
         run: |
-          curl "${{ secrets.BARK_URL }}动态更新成功?title=个人博客&sound=shake&icon=https://wxidqlvk.github.io/moments/网站图标/2026/08/23/1.jpg"
+          curl "${{ secrets.BARK_URL }}动态更新成功?title=个人博客&sound=shake&icon=https://wxidqlvk.github.io/moments/favicon/2026/08/23/1.webp"
 
       - name: Bark 推送 - 发布失败
         if: failure() && !cancelled() && (github.event_name == 'workflow_run' || github.event_name == 'workflow_dispatch')
         run: |
-          curl "${{ secrets.BARK_URL }}网站构建失败?title=个人博客&sound=shake&icon=https://wxidqlvk.github.io/moments/网站图标/2026/08/23/1.jpg"
+          curl "${{ secrets.BARK_URL }}网站构建失败?title=个人博客&sound=shake&icon=https://wxidqlvk.github.io/moments/favicon/2026/08/23/1.webp"
