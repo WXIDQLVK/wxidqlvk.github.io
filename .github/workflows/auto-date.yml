@@ -27,9 +27,9 @@ jobs:
           python-version: '3.12'
 
       - name: Install dependencies
-        run: pip install python-frontmatter pyyaml
+        run: pip install python-frontmatter pyyaml Pillow
 
-      - name: Auto fill images and fix frontmatter
+      - name: Auto convert images to WebP, fill and fix frontmatter
         run: |
           python << 'EOF'
           import os
@@ -37,6 +37,31 @@ jobs:
           import glob
           import re
           from pathlib import Path
+          from PIL import Image
+
+          # ==================== 第零部分：自动将图片转换为 WebP ====================
+          image_dirs = [
+              Path("XHBlogs/public/moments"),
+              Path("XHBlogs/public/posts"),
+              Path("XHBlogs/public/chatters")
+          ]
+
+          for img_base in image_dirs:
+              if img_base.exists() and img_base.is_dir():
+                  for img_path in list(img_base.glob("**/*")):
+                      if img_path.is_file() and img_path.suffix.lower() in ['.jpg', '.jpeg', '.png']:
+                          try:
+                              webp_path = img_path.with_suffix('.webp')
+                              # 如果对应的 webp 不存在，则进行转换
+                              if not webp_path.exists():
+                                  with Image.open(img_path) as im:
+                                      im.save(webp_path, 'WEBP', quality=85)
+                                  print(f"🔄 Converted to WebP: {img_path.name} -> {webp_path.name}")
+                              
+                              # 可选：转换后安全删除原图（如果你希望只保留webp）
+                              # img_path.unlink()
+                          except Exception as e:
+                              print(f"⚠️ Failed to convert {img_path} to WebP: {e}")
 
           # ==================== 第一部分：自动填充图片路径 ====================
           moments_dir = Path("XHBlogs/moments")
@@ -56,8 +81,9 @@ jobs:
                           continue
 
                       images = []
+                      # 优先收集 webp 格式的图片
                       for f in sorted(img_folder.iterdir(), key=lambda x: x.name):
-                          if f.suffix.lower() in ['.jpg', '.jpeg', '.png', '.webp', '.gif']:
+                          if f.suffix.lower() in ['.webp', '.jpg', '.jpeg', '.png', '.gif']:
                               rel_path = f"/moments/{title}/{year}/{month}/{day}/{f.name}"
                               images.append(rel_path)
 
@@ -225,6 +251,6 @@ jobs:
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "chore: auto fix and fill images"
+            git commit -m "chore: auto convert webp, fix and fill images"
             git push
           fi
