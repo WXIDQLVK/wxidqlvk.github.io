@@ -20,7 +20,11 @@ export default function ChatterBoard({ chatters }: { chatters: Chatter[] }) {
 
   const allTags = useMemo(() => {
     const tags = new Set<string>();
-    chatters.forEach(c => c.tags?.forEach(t => tags.add(t)));
+    // 🌟 核心修复：强制用 Array.isArray 保护，防止 tags 不是数组时崩溃
+    chatters.forEach(c => {
+      const safeTags = Array.isArray(c.tags) ? c.tags : [];
+      safeTags.forEach(t => tags.add(t));
+    });
     return ["全部", ...Array.from(tags)];
   }, [chatters]);
 
@@ -31,7 +35,8 @@ export default function ChatterBoard({ chatters }: { chatters: Chatter[] }) {
     return chatters.filter(chatter => {
       const matchSearch = chatter.title.toLowerCase().includes(query) ||
                           chatter.content.toLowerCase().includes(query);
-      const matchTag = activeTag === "全部" || chatter.tags?.includes(activeTag);
+      const safeTags = Array.isArray(chatter.tags) ? chatter.tags : [];
+      const matchTag = activeTag === "全部" || safeTags.includes(activeTag);
       return matchSearch && matchTag;
     });
   }, [chatters, searchQuery, activeTag]);
@@ -79,7 +84,6 @@ export default function ChatterBoard({ chatters }: { chatters: Chatter[] }) {
         </div>
       </div>
 
-      {/* 🌟 最终修复：用 Grid 替代 columns，手机和电脑都稳定 */}
       <motion.div 
         layout 
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6"
@@ -138,7 +142,7 @@ export default function ChatterBoard({ chatters }: { chatters: Chatter[] }) {
                     {chatter.content}
                   </div>
 
-                  {chatter.tags && chatter.tags.length > 0 && (
+                  {Array.isArray(chatter.tags) && chatter.tags.length > 0 && (
                     <div className="mt-3 md:mt-5 flex flex-wrap gap-1 md:gap-1.5">
                       {chatter.tags.map(t => (
                         <span 
