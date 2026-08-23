@@ -12,6 +12,16 @@ export const metadata = {
   title: "我的文章 | " + siteConfig.title,
 };
 
+/** 把 gray-matter 解析出的 date（可能是 string 或 Date）统一成字符串 */
+function normalizeDate(d: any): string {
+  if (!d) return '1970-01-01';
+  if (d instanceof Date && !isNaN(d.getTime())) {
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}`;
+  }
+  return String(d);
+}
+
 export default function Timeline() {
   const postsDirectory = path.join(process.cwd(), 'posts');
   let posts: any[] = [];
@@ -37,7 +47,7 @@ export default function Timeline() {
         posts.push({
           slug,
           title: data.title || '无标题',
-          date: data.date || '1970-01-01',
+          date: normalizeDate(data.date),
           description: data.description || '',
           tags: postTags,
           cover: data.cover || siteConfig.defaultPostCover,
