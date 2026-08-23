@@ -5,6 +5,16 @@ import matter from 'gray-matter';
 // 引入前台客户端组件
 import CreativeWorkshopClient from './CreativeWorkshopClient';
 
+/** 把 gray-matter 解析出的 date（可能是 string 或 Date）统一成字符串，避免 substring 报错 */
+function normalizeDate(d: any): string {
+  if (!d) return '2026-05-01';
+  if (d instanceof Date && !isNaN(d.getTime())) {
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
+  }
+  return String(d);
+}
+
 function getLocalItems(directoryName: string, typeName: string) {
   const dirPath = path.join(process.cwd(), directoryName);
   let items: any[] = [];
@@ -24,7 +34,8 @@ function getLocalItems(directoryName: string, typeName: string) {
           slug: realSlug, // 🌟 强制保留真实的 slug 供路由跳转使用
           title: data.title || '',
           type: typeName,
-          date: data.date || '2026-05-01',
+          // 🌟 核心修复：用 normalizeDate 确保 date 绝对是字符串，防止 substring 报错
+          date: normalizeDate(data.date),
           // 🌟 核心修复：把 cover（封面图）提取出来传给前台！如果写的是 image 也兼容
           cover: data.cover || data.image || null,
           // 把正文传给前台，去掉可能存在的换行符，限制长度防止卡片撑爆
