@@ -29,7 +29,7 @@ jobs:
       - name: Install dependencies
         run: pip install python-frontmatter pyyaml
 
-      - name: Auto fill images, fix frontmatter and clean unused images
+      - name: Auto fill images and fix frontmatter
         run: |
           python << 'EOF'
           import os
@@ -211,59 +211,20 @@ jobs:
               except Exception as e:
                   print(f"⚠️ Skip {path}: {e}")
 
-          # ==================== 第三部分：自动清理无用图片（说说、文章、杂谈全覆盖） ====================
-          def clean_unused_in_dir(md_folders, image_base_dir):
-              global changed
-              used_images = set()
-              
-              # 1. 收集所有指定 md 目录中引用的图片文件名
-              for folder in md_folders:
-                  folder_path = Path(folder)
-                  if folder_path.exists():
-                      for md_file in folder_path.glob("**/*.md"):
-                          try:
-                              text_content = md_file.read_text(encoding='utf-8', errors='ignore')
-                              found = re.findall(r'!\[.*?\]\((.*?)\)|<img.*?src=["\'](.*?)["\']', text_content)
-                              for item in found:
-                                  p_str = item[0] or item[1]
-                                  used_images.add(os.path.basename(p_str))
-                          except Exception:
-                              pass
-
-              # 2. 遍历对应的图片根目录，清理没有被引用的孤儿图片
-              base_path = Path(image_base_dir)
-              if base_path.exists():
-                  for root, dirs, files in os.walk(base_path):
-                      for file in files:
-                          if file.lower().endswith(('.webp', '.png', '.jpg', '.jpeg', '.gif')):
-                              if file not in used_images:
-                                  img_path = os.path.join(root, file)
-                                  try:
-                                      os.remove(img_path)
-                                      changed = True
-                                      print(f"🗑️ Cleaned unused image: {img_path}")
-                                  except Exception as e:
-                                      print(f"⚠️ Failed to remove image {img_path}: {e}")
-
-          # 分别对 moments、posts、chatters 执行清理检查
-          clean_unused_in_dir(["XHBlogs/moments"], "XHBlogs/public/moments")
-          clean_unused_in_dir(["XHBlogs/posts"], "XHBlogs/public/posts")
-          clean_unused_in_dir(["XHBlogs/chatters"], "XHBlogs/public/chatters")
-
           if not changed:
               print("✅ No files need fixing.")
           else:
-              print("✅ All fixes, image fills and cleanups applied.")
+              print("✅ All fixes and image fills applied.")
           EOF
 
       - name: Commit changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -A
+          git add .
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "chore: auto fix, fill images and clean unused assets across all sections"
+            git commit -m "chore: auto fix and fill images"
             git push
           fi
