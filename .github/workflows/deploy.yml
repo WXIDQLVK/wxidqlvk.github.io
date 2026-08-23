@@ -1,7 +1,7 @@
 name: Deploy Next.js site to Pages
 
 on:
-  # 改代码（非文章/说说）时直接部署
+  # 改代码（非文章/说说）时直接部署，但不会发 Bark 通知
   push:
     branches: ["main"]
     paths-ignore:
@@ -10,7 +10,7 @@ on:
       - 'XHBlogs/chatters/**'
       - 'XHBlogs/public/moments/**'
 
-  # 文章/说说推送后：等 auto-date 跑完再部署（避免抢跑）
+  # 文章/说说/杂谈推送后：等 auto-date 跑完再部署，且会精准发送通知
   workflow_run:
     workflows: ["Auto Fix Frontmatter & Fill Images"]
     types:
@@ -80,14 +80,14 @@ jobs:
         uses: actions/deploy-pages@v4
 
       # ==============================
-      # Bark 通知
+      # Bark 通知（仅限 workflow_run 或手动触发才推送）
       # ==============================
       - name: Bark 推送 - 发布成功
-        if: success()
+        if: success() && (github.event_name == 'workflow_run' || github.event_name == 'workflow_dispatch')
         run: |
           curl "${{ secrets.BARK_URL }}动态发布成功?title=个人博客&sound=shake&icon=https://wxidqlvk.github.io/moments/网站图标/2026/08/23/1.jpg"
 
       - name: Bark 推送 - 发布失败
-        if: failure()
+        if: failure() && !cancelled() && (github.event_name == 'workflow_run' || github.event_name == 'workflow_dispatch')
         run: |
           curl "${{ secrets.BARK_URL }}网站构建失败?title=个人博客&sound=shake&icon=https://wxidqlvk.github.io/moments/网站图标/2026/08/23/1.jpg"
