@@ -85,9 +85,9 @@ jobs:
       - name: Bark 推送 - 发布成功
         if: success()
         run: |
-          curl "${{ secrets.BARK_URL }}动态发布成功?title=个人博客&sound=shake&icon=https://wxidqlvk.github.io/moments/github/2026/08/23/1.jpg"
+          curl "${{ secrets.BARK_URL }}动态发布成功?title=个人博客&sound=shake&icon=https://wxidqlvk.github.io/moments/网站图标/2026/08/23/1.jpg"
 
       - name: Bark 推送 - 发布失败
         if: failure()
         run: |
-          curl "${{ secrets.BARK_URL }}网站构建失败?title=个人博客&sound=shake&icon=https://wxidqlvk.github.io/moments/github/2026/08/23/1.jpg"
+          curl "${{ secrets.BARK_URL }}网站构建失败?title=个人博客&sound=shake&icon=https://wxidqlvk.github.io/moments/网站图标/2026/08/23/1.jpg"
