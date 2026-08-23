@@ -1,4 +1,4 @@
-name: Deploy Next.js site to Pages
+Name: Deploy Next.js site to Pages
 
 on:
   # 改代码（非文章/说说）时直接部署，但不会发 Bark 通知
@@ -9,6 +9,8 @@ on:
       - 'XHBlogs/posts/**'
       - 'XHBlogs/chatters/**'
       - 'XHBlogs/public/moments/**'
+      - 'XHBlogs/public/posts/**'
+      - 'XHBlogs/public/chatters/**'
 
   # 文章/说说/杂谈推送后：等 auto-date 跑完再部署，且会精准发送通知
   workflow_run:
